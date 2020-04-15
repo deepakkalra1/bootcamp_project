@@ -237,6 +237,9 @@ public class CustomerService {
             else if (entry.getKey().equals("contact")){
                     customer.setContact(entry.getValue());
             }
+            else {
+                throw new GiveMessageException(Arrays.asList( StatusCode.NOT_VALID_FORMAT.toString()));
+            }
 
 
         }

@@ -27,6 +27,10 @@ public class Address {
     //@NotBlank(message = "Label must be provided")
     private String label;
 
+
+    //specify whether the address is of organization of seller or not
+    boolean org_address=false;
+
     @Version
     int version;
 
@@ -97,4 +101,11 @@ public class Address {
         this.label = label;
     }
 
+    public boolean isOrg_address() {
+        return org_address;
+    }
+
+    public void setOrg_address(boolean org_address) {
+        this.org_address = org_address;
+    }
 }

@@ -1,6 +1,8 @@
 package com.tothenew.bootcamp.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.tothenew.bootcamp.constants.JwtUtility;
 import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.pojo.user.UserSellerPojo;
@@ -8,11 +10,11 @@ import com.tothenew.bootcamp.service.userService.SellerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 @RestController
 public class SellerController {
@@ -65,8 +67,76 @@ public class SellerController {
 
 
     //------------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/profile")
+    public ResponseEntity viewCustomerProfile(@RequestHeader(value = "Authorization")String tokenString )
+            throws JsonProcessingException, IllegalAccessException, InstantiationException, InvocationTargetException
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO= sellerService.getSellerProfile(token);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+    @PutMapping("/user/seller/profile/update")
+    public ResponseEntity customerProfileUpdation(@RequestBody HashMap hashMap,
+                                                  @RequestHeader(value = "Authorization")String tokenString){
+        String token = tokenString.split(" ")[1];
+        sellerService.updateSellerProfile(token,hashMap);
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
 
     }
+
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/seller/password/update/{oldPassword}/{newPassword}/{confirmPassword}")
+    public ResponseEntity sellerPasswordUpdation(@PathVariable(value = "oldPassword")String oldPassword,
+                                                  @PathVariable(value = "newPassword")String newPassword,
+                                                  @PathVariable(value = "confirmPassword")String confirmPassword,
+                                                  @RequestHeader(value = "Authorization")String tokenString)
+    {
+
+        String token = tokenString.split(" ")[1];
+        System.out.println(token);
+        sellerService.updateSellerPasswordOnLogedIn(token,oldPassword,newPassword,confirmPassword);
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+
+    //----------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/seller/update-address")
+    public ResponseEntity customerUpdateAddress(@RequestBody HashMap<String, String> addressHashmap,
+                                                @RequestHeader(value = "Authorization")String tokenString)
+    {
+
+        String token = tokenString.split(" ")[1];
+        sellerService.updateSellerAddress(token,addressHashmap);
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+
+
+
+
+}
 
 
 

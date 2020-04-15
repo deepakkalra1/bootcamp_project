@@ -87,6 +87,10 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
                 .antMatchers("/user/customer/delete-address/{addressId}").hasAnyRole("CUSTOMER")
                 .antMatchers("/user/customer/update-address").hasAnyRole("CUSTOMER")
 
+                .antMatchers("/user/seller/profile").hasAnyRole("SELLER")
+                .antMatchers("/user/seller/profile/update").hasAnyRole("SELLER")
+                .antMatchers("/user/seller/update-address").hasAnyRole("SELLER")
+
                 //activation api's
                 .antMatchers("/user/activation").anonymous()
                 .antMatchers("/user/activation/resend/{email}").anonymous()

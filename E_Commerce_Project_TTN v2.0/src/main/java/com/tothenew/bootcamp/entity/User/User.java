@@ -121,6 +121,7 @@ public class User extends UserAuditable {
     }
 
     public List<Address> getAddressList() {
+
         return addressList;
     }
 

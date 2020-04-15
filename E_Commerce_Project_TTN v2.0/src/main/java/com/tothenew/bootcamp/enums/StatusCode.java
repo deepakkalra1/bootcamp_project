@@ -24,7 +24,8 @@ public enum StatusCode {
     OLD_PASSWORD_MISMATCH,
     NEW_PASSWORD_MISMATCH,
     EMPTY,
-    DOES_NOT_EXIST
+    DOES_NOT_EXIST,
+    INVALID
 
 
 }

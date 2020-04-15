@@ -114,7 +114,7 @@ public class CustomerController {
 
     //---------------------------------------------------------------------------------------------------------->
     @PutMapping("/user/customer/password/update/{oldPassword}/{newPassword}/{confirmPassword}")
-    public ResponseEntity customerProfileUpdation(@PathVariable(value = "oldPassword")String oldPassword,
+    public ResponseEntity customerPasswordUpdation(@PathVariable(value = "oldPassword")String oldPassword,
                                                   @PathVariable(value = "newPassword")String newPassword,
                                                   @PathVariable(value = "confirmPassword")String confirmPassword,
                                                   @RequestHeader(value = "Authorization")String tokenString)

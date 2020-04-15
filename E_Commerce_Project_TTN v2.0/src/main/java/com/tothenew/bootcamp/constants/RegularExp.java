@@ -1,5 +1,7 @@
 package com.tothenew.bootcamp.constants;
 
+import com.sun.mail.imap.AppendUID;
+
 import java.util.regex.Pattern;
 
 public class RegularExp {
@@ -13,6 +15,8 @@ public class RegularExp {
     //minimum 8 characters and 1 no and 1 alphabet
     public final static String passwordRegex="^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
 
+    //should be
+    public final static String ifKeyIsForAddressSellerProfileUpdate="address_[0-9]*$";
 
     public static boolean verifyEmailCorrectness(String received_email) {
         return Pattern.matches(RegularExp.emailRegex, received_email);
@@ -20,6 +24,10 @@ public class RegularExp {
 
     public static boolean verifyPasswordCorrectness(String received_password) {
         return Pattern.matches(RegularExp.passwordRegex, received_password);
+    }
+
+    public static boolean verifyIfAddressIsAskedForUpdationInSellerProfileUpdate(String keyToBeVerified){
+        return Pattern.matches(ifKeyIsForAddressSellerProfileUpdate,keyToBeVerified);
     }
 
 }
