@@ -2,7 +2,7 @@
 //
 //import ParentProductCategory;
 //import Product;
-//import ProductCategory;
+//import Category;
 //import Role;
 //import AddressPojo;
 //import com.e_commerce_project_ttn.E_Commerce_Project_TTN.model.DAO.Seller.*;
@@ -292,7 +292,7 @@
 //		product.setDescription("the is the new TV");
 //		product.setSeller_seller(user);
 //
-//		ProductCategory product_subcategory = new ProductCategory();
+//		Category product_subcategory = new Category();
 //		product_subcategory.setName("TV");
 //
 //		ParentProductCategory parent_product_category = new ParentProductCategory();

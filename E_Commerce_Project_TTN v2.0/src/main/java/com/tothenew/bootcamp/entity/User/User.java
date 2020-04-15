@@ -1,13 +1,13 @@
 package com.tothenew.bootcamp.entity.User;
 
-import com.tothenew.bootcamp.configurations.jpa.entityAuditable.UserAuditable;
+import com.tothenew.bootcamp.configurations.jpa.entityAuditable.Auditable;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.util.List;
 
 @MappedSuperclass
-public class User extends UserAuditable {
+public class User extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

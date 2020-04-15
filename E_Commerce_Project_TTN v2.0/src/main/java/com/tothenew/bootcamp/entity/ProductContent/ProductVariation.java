@@ -6,6 +6,7 @@ import com.tothenew.bootcamp.constants.JsonConversion;
 
 import javax.persistence.*;
 import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "product_variation")
@@ -17,10 +18,16 @@ public class ProductVariation {
     private Integer quantity_available;
     private Integer price;
 
+    @Transient
     private String metadata;
 
-    @Transient
-    private HashMap<String,String> metadataHashmap;
+    @ElementCollection
+    @CollectionTable(name = "product_variation_metadata"
+    ,joinColumns = {@JoinColumn(name = "product_variation_id",referencedColumnName = "id")}
+    )
+    @MapKeyColumn(name = "key_field")
+    @Column(name = "value_field")
+    private Map<String,String> metadataHashmap;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
@@ -68,12 +75,12 @@ public class ProductVariation {
         return metadata;
     }
 
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
+    public Map<String, String> getMetadataHashmap() {
+        return metadataHashmap;
     }
 
-    public HashMap<String, String> getMetadataHashmap() {
-        return metadataHashmap;
+    public void setMetadataHashmap(Map<String, String> metadataHashmap) {
+        this.metadataHashmap = metadataHashmap;
     }
 
     public void setMetadataHashmap(HashMap<String, String> metadataHashmap) {

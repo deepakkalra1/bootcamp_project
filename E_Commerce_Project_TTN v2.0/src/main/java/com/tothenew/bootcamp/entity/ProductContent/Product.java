@@ -1,5 +1,6 @@
 package com.tothenew.bootcamp.entity.ProductContent;
 
+import com.tothenew.bootcamp.configurations.jpa.entityAuditable.Auditable;
 import com.tothenew.bootcamp.entity.User.Seller;
 
 import javax.persistence.*;
@@ -7,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "product")
-public class Product {
+public class Product extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -23,13 +24,13 @@ public class Product {
     @Version
     int version;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "seller_user_id")
     private Seller seller_seller;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "category_id")
-    private ProductCategory productCategory;
+    private Category category;
 
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL)
     private List<ProductVariation> productVariationlist;
@@ -113,12 +114,12 @@ public class Product {
         this.seller_seller = seller_seller;
     }
 
-    public ProductCategory getProductCategory() {
-        return productCategory;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setProductCategory(ProductCategory productCategory) {
-        this.productCategory = productCategory;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public List<ProductVariation> getProductVariationlist() {
