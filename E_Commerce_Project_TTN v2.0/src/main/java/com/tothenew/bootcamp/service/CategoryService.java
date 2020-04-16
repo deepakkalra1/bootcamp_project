@@ -291,13 +291,33 @@ public class CategoryService {
     }
 
 
-    public CommonResponseVO viewSingleCategoryByAdmin(int id){
-        CommonResponseVO<LinkedHashMap<String, LinkedHashMap<String, String>>> commonResponseVO = new CommonResponseVO<>();
+    public CommonResponseVO<LinkedHashMap> viewSingleCategoryByAdmin(int id){
+        CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>();
 
         try {
+            LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap>> hashMap = new LinkedHashMap<>();
         Category category = categoryRespository.findById(id).get();
+        Iterable<Category> childCategories;
+            LinkedHashMap<String, String> childCategoryDetailContainer = new LinkedHashMap<>();
+            LinkedHashMap<String, LinkedHashMap> childContainer = new LinkedHashMap<>();
+            int[] j=new int[]{0};
+            try {
+            childCategories = categoryRespository.findByParentId(id);
+            childCategories.forEach(childCategory->{
+                childCategoryDetailContainer.put("id", String.valueOf(childCategory.getId()));
+                childCategoryDetailContainer.put("categoryName", childCategory.getName());
+                childCategoryDetailContainer.put("parent_id", String.valueOf(childCategory.getParentCategory().getId()));
+                childContainer.put(String.valueOf( j[0]++),childCategoryDetailContainer);
 
-        LinkedHashMap<String, LinkedHashMap<String, String>> hashMap = new LinkedHashMap<>();
+            });
+
+            hashMap.put("childCategories",childContainer);
+        }
+        catch (NullPointerException e){
+            hashMap.put("Child Categories",childContainer);
+        }
+
+        LinkedHashMap<String, LinkedHashMap> categoryTree = new LinkedHashMap<>();
         int[] count = new int[]{0};
         while (true) {
             LinkedHashMap<String, String> categoryDetailContainer = new LinkedHashMap<>();
@@ -306,7 +326,7 @@ public class CategoryService {
                 categoryDetailContainer.put("categoryName", category.getName());
                 categoryDetailContainer.put("parent_id", String.valueOf(category.getParentCategory().getId()));
 
-                hashMap.put(String.valueOf(count[0]), categoryDetailContainer);
+                categoryTree.put(String.valueOf(count[0]), categoryDetailContainer);
                 count[0]++;
                 category = category.getParentCategory();
             } else {
@@ -314,10 +334,10 @@ public class CategoryService {
                 categoryDetailContainer.put("categoryName", category.getName());
                 categoryDetailContainer.put("parent_id", StatusCode.NOT_AVAILABLE.toString());
 
-                hashMap.put(String.valueOf(count[0]), categoryDetailContainer);
+                categoryTree.put(String.valueOf(count[0]), categoryDetailContainer);
                 break;
             }
-
+            hashMap.put("categoryTree",categoryTree);
             commonResponseVO.setData(hashMap);
         }
 
