@@ -21,11 +21,11 @@ public class Category {
 
     // --------------------------------Admin Category Api's
     //--------------------------------------------------------------------------------------------------------->
-    @PostMapping("/user/admin/add/field/{fieldValue}")
-    public ResponseEntity addFieldByAdmin(@PathVariable(name = "fieldValue")String fieldValue
+    @PostMapping("/user/admin/add/field/{fieldName}")
+    public ResponseEntity addFieldByAdmin(@PathVariable(name = "fieldName")String fieldName
                                           )
     {
-        CommonResponseVO commonResponseVO = categoryService.addFieldByAdmin(fieldValue);
+        CommonResponseVO commonResponseVO = categoryService.addFieldByAdmin(fieldName);
         return new ResponseEntity(commonResponseVO, HttpStatus.OK);
 
     }
@@ -96,6 +96,18 @@ public class Category {
                                                       @PathVariable(name = "name")String categoryNewName)
     {
          CommonResponseVO commonResponseVO= categoryService.updateCategoryByAdmin(categoryId,categoryNewName);
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------------>
+    @PostMapping("/user/admin/add/category-metadata")
+    public ResponseEntity addCategoryMetadataByAdmin( @RequestBody HashMap<String, String> metadata)
+    {
+        CommonResponseVO commonResponseVO= categoryService.addCategoryMetadataByAdmin(metadata);
         return new ResponseEntity(commonResponseVO, HttpStatus.OK);
     }
 

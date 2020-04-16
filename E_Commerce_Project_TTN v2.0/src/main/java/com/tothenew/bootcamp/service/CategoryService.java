@@ -2,11 +2,13 @@ package com.tothenew.bootcamp.service;
 
 import com.tothenew.bootcamp.entity.ProductContent.Category;
 import com.tothenew.bootcamp.entity.ProductContent.CategoryMetadataField;
+import com.tothenew.bootcamp.entity.ProductContent.CategoryMetadataValue;
 import com.tothenew.bootcamp.entity.ProductContent.Product;
 import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.exceptionHandling.GiveMessageException;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.repositories.CategoryMetadataFieldRepository;
+import com.tothenew.bootcamp.repositories.CategoryMetadataValueRepository;
 import com.tothenew.bootcamp.repositories.CategoryRespository;
 import com.tothenew.bootcamp.repositories.ProductRepository;
 import net.bytebuddy.dynamic.scaffold.MethodGraph;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 @Service
 public class CategoryService {
@@ -30,6 +34,9 @@ public class CategoryService {
 
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    CategoryMetadataValueRepository categoryMetadataValueRepository;
 
 
     public CommonResponseVO addFieldByAdmin(String fieldName){
@@ -498,5 +505,77 @@ public class CategoryService {
         updatedCategory.setName(newCategoryName);
         categoryRespository.save(updatedCategory);
         return new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+    }
+
+
+
+
+
+    //--------------------------------------------------------------------------------------------------->
+    public CommonResponseVO addCategoryMetadataByAdmin(HashMap<String, String> metadata){
+
+        CategoryMetadataValue categoryMetadataValue = new CategoryMetadataValue();
+        try {
+
+           int categoryId = Integer.parseInt( metadata.get("categoryId"));
+            Category category = categoryRespository.findById(categoryId).get();
+            categoryMetadataValue.setCategory(category);
+
+
+            int categoryMetadataFieldId = Integer.parseInt( metadata.get("categoryMetadataFieldId"));
+            CategoryMetadataField categoryMetadataField =
+                    categoryMetadataFieldRepository.findById(categoryMetadataFieldId).get();
+            categoryMetadataValue.setCategoryMetadataField(categoryMetadataField);
+
+            Iterator it = categoryMetadataValueRepository.findValueCombinationOfFieldIdAndCategoryId(categoryMetadataFieldId,categoryId).iterator();
+
+            if (it.hasNext()==true){
+                throw new GiveMessageException(Arrays.asList(StatusCode.EXIST.toString()),
+                        Arrays.asList("Value for the combination of category id and field id already exist"));
+            }
+
+            int count[] = new int[]{0};
+            String values="";
+            Set<Entry<String, String>> entrySet= metadata.entrySet();
+            boolean exist=false;
+            for (Entry entry: entrySet){
+                if (Pattern.matches("value_[0-9]*$",entry.getKey().toString() )){
+                    if (values.equals("")){
+                        values=entry.getValue().toString();
+                    }
+                    else {
+                        values+=","+entry.getValue().toString();
+                    }
+
+                    exist=true;
+
+                }
+            }
+            if (exist==false){
+                throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
+                        Arrays.asList("No values were provided"));
+            }
+
+            categoryMetadataValue.setCategoryValue(values);
+            categoryMetadataValueRepository.save(categoryMetadataValue);
+        }catch (NullPointerException e){
+            throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString())
+            ,Arrays.asList("Provided key Does not match the required key"));
+        }
+        catch (NumberFormatException number){
+            throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
+                    Arrays.asList("Either Category Id or Field Id is not provided or are in wrong format"));
+        }
+        catch (NoSuchElementException ele){
+            throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                    Arrays.asList("Either Category Id or Field Id provided does not exist"));
+
+        }
+
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return commonResponseVO;
+
+
+
     }
 }
