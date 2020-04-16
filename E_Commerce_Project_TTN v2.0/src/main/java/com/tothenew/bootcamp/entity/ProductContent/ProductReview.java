@@ -16,8 +16,6 @@ public class ProductReview extends Auditable {
 
     private int rating;
 
-    @Version
-    private int version;
 
     @OneToOne
     @JoinColumn(name = "product_id",referencedColumnName = "id")
@@ -53,13 +51,6 @@ public class ProductReview extends Auditable {
         this.rating = rating;
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 
     public Product getProductWhoseReviewItIs() {
         return productWhoseReviewItIs;

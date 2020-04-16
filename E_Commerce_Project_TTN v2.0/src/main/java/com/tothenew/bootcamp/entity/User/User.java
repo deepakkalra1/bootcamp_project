@@ -34,9 +34,6 @@ public class User extends Auditable {
  //   @Size(max = 10, min = 10, message = "Digits should be 10")
     private String contact;
 
-    @Version
-    int version;
-
     private boolean is_deleted=false;
     private boolean is_active=false;
     String image;
@@ -137,11 +134,5 @@ public class User extends Auditable {
         this.image = image;
     }
 
-    public int getVersion() {
-        return version;
-    }
 
-    public void setVersion(int version) {
-        this.version = version;
-    }
 }

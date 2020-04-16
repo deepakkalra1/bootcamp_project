@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 @RestController
-public class SellerController {
+public class Seller {
 
     @Autowired
     SellerService sellerService;

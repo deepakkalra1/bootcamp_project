@@ -11,9 +11,6 @@ public class CategoryMetadataValue extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Version
-    private int version;
-
     @OneToOne
     @JoinColumn(name = "category_key_id",referencedColumnName = "id")
     CategoryMetadataField categoryMetadataField;
@@ -34,13 +31,6 @@ public class CategoryMetadataValue extends Auditable {
         this.id = id;
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 
     public CategoryMetadataField getCategoryMetadataField() {
         return categoryMetadataField;

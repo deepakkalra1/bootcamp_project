@@ -106,7 +106,9 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
                 .antMatchers("/user/admin/activate-seller/{email}").anonymous()
                 .antMatchers("/user/admin/deactivate-customer/{email}").anonymous()
                 .antMatchers("/user/admin/deactivate-seller/{email}").anonymous()
-
+                .antMatchers("/user/admin/add/field/{fieldValue}").anonymous()
+                .antMatchers("/user/admin/view/fields").anonymous()
+                .antMatchers("/user/admin/add/category").anonymous()
 
                 .antMatchers("/doLogout").hasAnyRole("ADMIN", "CUSTOMER", "SELLER")
                 .anyRequest().authenticated()

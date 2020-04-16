@@ -23,8 +23,6 @@ public class Category extends Auditable {
     private Category parentCategory;
 
 
-    @Version
-    private int version;
 
     //--------------------------------------------------------------------------------------------------------------->
 
@@ -60,11 +58,4 @@ public class Category extends Auditable {
         this.parentCategory = parentCategory;
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 }

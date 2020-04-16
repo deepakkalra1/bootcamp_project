@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 @RestController
-public class CustomerController {
+public class Customer {
 
     @Autowired
     CustomerService customerService;

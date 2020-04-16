@@ -1,10 +1,12 @@
 package com.tothenew.bootcamp.entity.User;
 
+import com.tothenew.bootcamp.configurations.jpa.entityAuditable.Auditable;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "address")
-public class Address {
+public class Address  extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -31,19 +33,8 @@ public class Address {
     //specify whether the address is of organization of seller or not
     boolean org_address=false;
 
-    @Version
-    int version;
-
     //getters and setters
 
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 
     public int getId() {
         return id;

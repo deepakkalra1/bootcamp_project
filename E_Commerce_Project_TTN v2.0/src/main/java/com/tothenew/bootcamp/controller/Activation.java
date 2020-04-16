@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
 @RestController
-public class ActivationController {
+public class Activation {
     @Autowired
     TokenStore tokenStore;
 

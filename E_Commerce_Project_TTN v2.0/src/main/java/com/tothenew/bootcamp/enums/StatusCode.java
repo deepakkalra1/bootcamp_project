@@ -25,7 +25,10 @@ public enum StatusCode {
     NEW_PASSWORD_MISMATCH,
     EMPTY,
     DOES_NOT_EXIST,
-    INVALID
+    INVALID,
+    EXIST,
+    PARENT,
+    CHILD
 
 
 }

@@ -2,6 +2,7 @@ package com.tothenew.bootcamp.entity.ProductContent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tothenew.bootcamp.configurations.jpa.entityAuditable.Auditable;
 import com.tothenew.bootcamp.constants.JsonConversion;
 
 import javax.persistence.*;
@@ -10,7 +11,7 @@ import java.util.Map;
 
 @Entity
 @Table(name = "product_variation")
-public class ProductVariation {
+public class ProductVariation  extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -33,9 +34,6 @@ public class ProductVariation {
     @JoinColumn(name = "product_id")
     private Product product;
 
-
-    @Version
-    int version;
 
 
     //-------------------------------------------------------------------------------------------------------------->
@@ -95,12 +93,5 @@ public class ProductVariation {
         metadataHashmap=JsonConversion.jsonDeserialization(this.metadata);
     }
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 }
 

@@ -10,13 +10,11 @@ import java.util.Map;
 public class CategoryMetadataField extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    private int id;
 
     @Column(name = "category_key")
-    String categoryKey;
+    private String categoryKey;
 
-    @Version
-    private int version;
 
     public int getId() {
         return id;
@@ -33,6 +31,5 @@ public class CategoryMetadataField extends Auditable {
     public void setCategoryKey(String categoryKey) {
         this.categoryKey = categoryKey;
     }
-
 
 }

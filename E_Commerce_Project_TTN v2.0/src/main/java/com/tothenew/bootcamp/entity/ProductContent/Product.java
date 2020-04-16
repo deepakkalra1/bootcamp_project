@@ -21,8 +21,7 @@ public class Product extends Auditable {
     private boolean is_returnable;
     private boolean is_active;
     private String brand;
-    @Version
-    int version;
+
 
     @ManyToOne
     @JoinColumn(name = "seller_user_id")
@@ -42,13 +41,6 @@ public class Product extends Auditable {
 //--------------------------------------------------------------------------------------------------------------->
 
 
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 
     public int getId() {
         return id;

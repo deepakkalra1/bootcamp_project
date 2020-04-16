@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 
 @RestController
-public class AdminController {
+public class Admin {
 
     @Autowired
     AdminService adminService;
