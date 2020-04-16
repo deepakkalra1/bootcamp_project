@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Service
@@ -221,43 +222,45 @@ public class CategoryService {
             });
 
             fetchedParentCategoryId=parentId.intValue();
-            while (true) {
-                try {
-
-                    Iterable<Category> parentCategories = categoryRespository.findByParentId(fetchedParentCategoryId);
-                    parentCategories.forEach(parentCategory -> {
-
-                        if (parentCategory.getName().equals(newCategoryName)) {
-                            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
-                                    Arrays.asList("Category name already EXIST in the ^ Tree"));
-
-                        }
-                    });
-                }catch (NullPointerException e){
-                }
-                try {
-                    Category category = categoryRespository.findById(fetchedParentCategoryId).get();
-                    fetchedParentCategoryId = category.getParentCategory().getId();
-
-                }catch (NullPointerException ee){
-                    Category ToppestCategory = categoryRespository.findById(fetchedParentCategoryId).get();
-
-                    if (ToppestCategory.getName().equals(newCategoryName)){
-                        throw new GiveMessageException(Arrays.asList( StatusCode.FAILED.toString()),Arrays.asList("Category name already EXIST in the ^ Tree"));
-                    }
-                    System.out.println("No more parent Exist futher"); StatusCode.FAILED.toString();
-                    break;
-                }
-
-            }
+//            while (true) {
+//                try {
+//
+//                    Iterable<Category> parentCategories = categoryRespository.findByParentId(fetchedParentCategoryId);
+//                    parentCategories.forEach(parentCategory -> {
+//
+//                        if (parentCategory.getName().equals(newCategoryName)) {
+//                            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+//                                    Arrays.asList("Category name already EXIST in the ^ Tree"));
+//
+//                        }
+//                    });
+//                }catch (NullPointerException e){
+//                }
+//                try {
+//                    Category category = categoryRespository.findById(fetchedParentCategoryId).get();
+//                    fetchedParentCategoryId = category.getParentCategory().getId();
+//
+//                }catch (NullPointerException ee){
+//                    Category ToppestCategory = categoryRespository.findById(fetchedParentCategoryId).get();
+//
+//                    if (ToppestCategory.getName().equals(newCategoryName)){
+//                        throw new GiveMessageException(Arrays.asList( StatusCode.FAILED.toString()),Arrays.asList("Category name already EXIST in the ^ Tree"));
+//                    }
+//                    System.out.println("No more parent Exist futher"); StatusCode.FAILED.toString();
+//                    break;
+//                }
+//
+//            }
+            checkCategoryNameEistUpInTree(parentId,newCategoryName);
 
             fetchedParentCategoryId=parentId.intValue();
                 Category parentCategory = categoryRespository.findById(fetchedParentCategoryId).get();
 
                 /*
-                this method is to check whether the category name eist down in the tree
+                this method is to check whether the category name exist down in the tree
                  */
-               checkCategoryNameExistDownInTree(parentCategory,newCategoryName);
+               checkCategoryNameExistDownInTree(parentCategory.getId(),newCategoryName);
+
                 Category newChildCategory = new Category();
                 newChildCategory.setName(newCategoryName);
                 newChildCategory.setParentCategory(parentCategory);
@@ -272,11 +275,43 @@ public class CategoryService {
     }
 
 
+    public void checkCategoryNameEistUpInTree(int parent_id,String newCategoryName){
+        int fetchedParentCategoryId=parent_id;
+        while (true) {
+            try {
+
+                Iterable<Category> parentCategories = categoryRespository.findByParentId(fetchedParentCategoryId);
+                parentCategories.forEach(parentCategory -> {
+
+                    if (parentCategory.getName().equals(newCategoryName)) {
+                        throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+                                Arrays.asList("Category name already EXIST in the ^ Tree"));
+
+                    }
+                });
+            }catch (NullPointerException e){
+            }
+            try {
+                Category category = categoryRespository.findById(fetchedParentCategoryId).get();
+                fetchedParentCategoryId = category.getParentCategory().getId();
+
+            }catch (NullPointerException ee){
+                Category ToppestCategory = categoryRespository.findById(fetchedParentCategoryId).get();
+
+                if (ToppestCategory.getName().equals(newCategoryName)){
+                    throw new GiveMessageException(Arrays.asList( StatusCode.FAILED.toString()),Arrays.asList("Category name already EXIST in the ^ Tree"));
+                }
+                System.out.println("No more parent Exist futher"); StatusCode.FAILED.toString();
+                break;
+            }
+
+        }
+    }
 
 
 
-
-    public void checkCategoryNameExistDownInTree(Category category,String newCategoryName){
+    public void checkCategoryNameExistDownInTree(int id,String newCategoryName){
+        Category category = categoryRespository.findById(id).get();
         Iterable<Category> categories = categoryRespository.findByParentId(category.getId());
         if (categories==null){
             return;
@@ -286,7 +321,7 @@ public class CategoryService {
                 throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
                         Arrays.asList("Category name already EXIST in the !^ Tree"));
             }
-            checkCategoryNameExistDownInTree(category1,newCategoryName);
+            checkCategoryNameExistDownInTree(category1.getId(),newCategoryName);
         });
 
     }
@@ -356,15 +391,17 @@ public class CategoryService {
     }
 
 
+
+
+
+    //------------------------------------------------------------------------------------------------------->
     /***
-     *
      * @param max
      * @param offset
      * @param order
      * @param sort
      * @param query
      * @return
-     * 1->
      */
     public CommonResponseVO<LinkedHashMap> viewAllCategoriesByAdmin(Integer max,Integer offset,
                                                                     String order,String sort, String query)
@@ -382,7 +419,6 @@ public class CategoryService {
                 pageOffset = offset.intValue();
             }
             maxRecordsPerPage=max.intValue();
-
             if (sort!=null) {
                 if (sort.toLowerCase().equals("asc")) {
                     direction = Direction.ASC;
@@ -392,8 +428,6 @@ public class CategoryService {
                     throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
                 }
             }
-
-
             if (query!=null){
                 if (query!="id" ||query!="parent_id" || query!="name"){
                     throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
@@ -405,8 +439,6 @@ public class CategoryService {
 
         }
         else if (sort!=null){
-
-
             if (sort.toLowerCase().equals("asc")) {
                 direction = Direction.ASC;
             } else if (sort.toLowerCase().equals("desc")) {
@@ -421,9 +453,7 @@ public class CategoryService {
                 }
                 property=query;
             }
-
             allCategories= categoryRespository.findAllOrderBy(property,direction.toString());
-
         }
         else if (query!=null){
             if (query!="id" ||query!="parent_id" || query!="name"){
@@ -452,5 +482,21 @@ public class CategoryService {
         CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>();
         commonResponseVO.setData(categoriesHashmap);
         return commonResponseVO;
+    }
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    public CommonResponseVO updateCategoryByAdmin(int categoryId,String newCategoryName){
+        int fetchedParentCategoryId;
+        fetchedParentCategoryId=categoryId;
+        checkCategoryNameEistUpInTree(categoryId,newCategoryName);
+        checkCategoryNameExistDownInTree(categoryId,newCategoryName);
+        Category updatedCategory= categoryRespository.findById(categoryId).get();
+        updatedCategory.setName(newCategoryName);
+        categoryRespository.save(updatedCategory);
+        return new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
     }
 }

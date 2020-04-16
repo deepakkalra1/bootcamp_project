@@ -84,33 +84,20 @@ public class Category {
         CommonResponseVO commonResponseVO = categoryService.viewAllCategoriesByAdmin(max,offset,order,sort,query);
         return new ResponseEntity(commonResponseVO, HttpStatus.OK);
     }
-//
-//
-//
-//
-//
-//    //------------------------------------------------------------------------------------------------------------>
-//    @DeleteMapping("/user/admin/delete/category/{id}")
-//    public ResponseEntity deleteSingleCategoryByAdmin(@RequestHeader(value = "Authorization")String tokenString,
-//                                                      @PathVariable(name = "id")int categoryId ){
-//        String token = tokenString.split(" ")[1];
-//        //CommonResponseVO commonResponseVO = categoryService.
-//        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
-//    }
-//
-//
-//
-//
-//
-//    //------------------------------------------------------------------------------------------------------------>
-//    @PutMapping("/user/admin/update/category/{id}/{name}")
-//    public ResponseEntity deleteSingleCategoryByAdmin(@RequestHeader(value = "Authorization")String tokenString,
-//                                                      @PathVariable(name = "id")int categoryId ,
-//                                                      @PathVariable(name = "name")String categoryNewName){
-//        String token = tokenString.split(" ")[1];
-//        //CommonResponseVO commonResponseVO = categoryService.
-//        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
-//    }
+
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------------>
+    @PutMapping("/user/admin/update/category/{id}/{name}")
+    public ResponseEntity updateSingleCategoryByAdmin(@PathVariable(name = "id")int categoryId ,
+                                                      @PathVariable(name = "name")String categoryNewName)
+    {
+         CommonResponseVO commonResponseVO= categoryService.updateCategoryByAdmin(categoryId,categoryNewName);
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
 
 
 }
