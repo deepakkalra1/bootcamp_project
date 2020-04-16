@@ -289,4 +289,48 @@ public class CategoryService {
         });
 
     }
+
+
+    public CommonResponseVO viewSingleCategoryByAdmin(int id){
+        CommonResponseVO<LinkedHashMap<String, LinkedHashMap<String, String>>> commonResponseVO = new CommonResponseVO<>();
+
+        try {
+        Category category = categoryRespository.findById(id).get();
+
+        LinkedHashMap<String, LinkedHashMap<String, String>> hashMap = new LinkedHashMap<>();
+        int[] count = new int[]{0};
+        while (true) {
+            LinkedHashMap<String, String> categoryDetailContainer = new LinkedHashMap<>();
+            if (category.getParentCategory() != null) {
+                categoryDetailContainer.put("id", String.valueOf(category.getId()));
+                categoryDetailContainer.put("categoryName", category.getName());
+                categoryDetailContainer.put("parent_id", String.valueOf(category.getParentCategory().getId()));
+
+                hashMap.put(String.valueOf(count[0]), categoryDetailContainer);
+                count[0]++;
+                category = category.getParentCategory();
+            } else {
+                categoryDetailContainer.put("id", String.valueOf(category.getId()));
+                categoryDetailContainer.put("categoryName", category.getName());
+                categoryDetailContainer.put("parent_id", StatusCode.NOT_AVAILABLE.toString());
+
+                hashMap.put(String.valueOf(count[0]), categoryDetailContainer);
+                break;
+            }
+
+            commonResponseVO.setData(hashMap);
+        }
+
+        }catch (NullPointerException e){
+            throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                    Arrays.asList("Provided Category ID does not Exist"));
+        }
+        catch (NoSuchElementException e){
+            throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                    Arrays.asList("Provided Category ID does not Exist"));
+        }
+
+
+        return commonResponseVO;
+    }
 }

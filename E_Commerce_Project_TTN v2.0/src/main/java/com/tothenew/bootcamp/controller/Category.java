@@ -64,13 +64,11 @@ public class Category {
 
 
     //------------------------------------------------------------------------------------------------------------>
-//    @GetMapping("/user/admin/view/category/{id}")
-//    public ResponseEntity viewSingleCategoryByAdmin(@RequestHeader(value = "Authorization")String tokenString,
-//                                                    @PathVariable("id") int categoryId ){
-//        String token = tokenString.split(" ")[1];
-//        //CommonResponseVO commonResponseVO = categoryService.
-//        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
-//    }
+    @GetMapping("/user/admin/view/category/{id}")
+    public ResponseEntity viewSingleCategoryByAdmin(@PathVariable("id") int categoryId ){
+        CommonResponseVO commonResponseVO = categoryService.viewSingleCategoryByAdmin(categoryId);
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
 //
 //
 //

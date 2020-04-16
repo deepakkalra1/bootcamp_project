@@ -28,7 +28,8 @@ public enum StatusCode {
     INVALID,
     EXIST,
     PARENT,
-    CHILD
+    CHILD,
+    NOT_AVAILABLE
 
 
 }
