@@ -9,6 +9,7 @@ import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.repositories.CategoryMetadataFieldRepository;
 import com.tothenew.bootcamp.repositories.CategoryRespository;
 import com.tothenew.bootcamp.repositories.ProductRepository;
+import net.bytebuddy.dynamic.scaffold.MethodGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -101,7 +102,7 @@ public class CategoryService {
 
 
                 if (query!=null){
-                    if (query!="category_key"){
+                    if (query!="category_key" || query!="id"){
                         throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
                     }
                     property=query;
@@ -147,7 +148,7 @@ public class CategoryService {
         LinkedHashMap<String, CategoryMetadataField> hashMap = new LinkedHashMap<>();
         try {
             categoryMetadataFields.forEach(categoryMetadataField -> {
-                System.out.println(categoryMetadataField);
+
                 hashMap.put("field_"+count[0],categoryMetadataField);
                 count[0]++;
             });
@@ -351,6 +352,105 @@ public class CategoryService {
         }
 
 
+        return commonResponseVO;
+    }
+
+
+    /***
+     *
+     * @param max
+     * @param offset
+     * @param order
+     * @param sort
+     * @param query
+     * @return
+     * 1->
+     */
+    public CommonResponseVO<LinkedHashMap> viewAllCategoriesByAdmin(Integer max,Integer offset,
+                                                                    String order,String sort, String query)
+    {
+        int[] count = new int[]{0};
+        LinkedHashMap<String, Category> categoriesHashmap = new LinkedHashMap<>();
+        Iterable<Category> allCategories = categoryRespository.findAll();
+        int maxRecordsPerPage;
+        int pageOffset=0;
+        Direction direction=Direction.ASC;
+        String property="id";
+
+        if (max!=null){
+            if (offset!=null) {
+                pageOffset = offset.intValue();
+            }
+            maxRecordsPerPage=max.intValue();
+
+            if (sort!=null) {
+                if (sort.toLowerCase().equals("asc")) {
+                    direction = Direction.ASC;
+                } else if (sort.toLowerCase().equals("desc")) {
+                    direction = Direction.DESC;
+                } else {
+                    throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
+                }
+            }
+
+
+            if (query!=null){
+                if (query!="id" ||query!="parent_id" || query!="name"){
+                    throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
+                }
+                property=query;
+            }
+            Pageable pageable = PageRequest.of(pageOffset,maxRecordsPerPage,direction,property);
+            allCategories=categoryRespository.findAll(pageable);
+
+        }
+        else if (sort!=null){
+
+
+            if (sort.toLowerCase().equals("asc")) {
+                direction = Direction.ASC;
+            } else if (sort.toLowerCase().equals("desc")) {
+                direction = Direction.DESC;
+            } else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
+            }
+
+            if (query!=null){
+                if (query!="id" ||query!="parent_id" || query!="name"){
+                    throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
+                }
+                property=query;
+            }
+
+            allCategories= categoryRespository.findAllOrderBy(property,direction.toString());
+
+        }
+        else if (query!=null){
+            if (query!="id" ||query!="parent_id" || query!="name"){
+                throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
+            }
+
+            allCategories=categoryRespository.findAllOrderBy(direction.toString(),query);
+        }
+        else {
+            allCategories=categoryRespository.findAll();
+        }
+        allCategories.forEach(category -> {
+            category.setParentCategory(null);
+            category.setProductSet(null);
+//            List<Product> productList = category.getProductSet();
+//            productList.forEach(product -> {
+//                product.setProductVariationlist(null);
+//                product.setSeller_seller(null);
+//                product.setCategory(null);
+//
+//            });
+//            category.setProductSet(productList);
+            categoriesHashmap.put("category_"+count[0]++,category);
+        });
+
+        CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>();
+        commonResponseVO.setData(categoriesHashmap);
         return commonResponseVO;
     }
 }

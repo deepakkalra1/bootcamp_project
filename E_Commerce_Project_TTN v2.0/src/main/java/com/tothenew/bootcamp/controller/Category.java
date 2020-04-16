@@ -69,23 +69,21 @@ public class Category {
         CommonResponseVO commonResponseVO = categoryService.viewSingleCategoryByAdmin(categoryId);
         return new ResponseEntity(commonResponseVO, HttpStatus.OK);
     }
-//
-//
-//
-//
-//
-//    //------------------------------------------------------------------------------------------------------------>
-//    @GetMapping("/user/admin/view/categories")
-//    public ResponseEntity viewAllCategoryByAdmin(@RequestHeader(value = "Authorization")String tokenString,
-//                                                 @RequestParam(value = "max",required = false) int max,
-//                                                 @RequestParam(value = "offset",required = false) int offset,
-//                                                 @RequestParam(value = "order",required = false) String order,
-//                                                 @RequestParam(value = "sort",required = false) String sort,
-//                                                 @RequestParam(value = "string",required = false) String query){
-//        String token = tokenString.split(" ")[1];
-//        //CommonResponseVO commonResponseVO = categoryService.
-//        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
-//    }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------------>
+    @GetMapping("/user/admin/view/categories")
+    public ResponseEntity viewAllCategoryByAdmin(@RequestParam(value = "max",required = false) Integer max,
+                                                 @RequestParam(value = "offset",required = false) Integer offset,
+                                                 @RequestParam(value = "order",required = false) String order,
+                                                 @RequestParam(value = "sort",required = false) String sort,
+                                                 @RequestParam(value = "string",required = false) String query){
+        CommonResponseVO commonResponseVO = categoryService.viewAllCategoriesByAdmin(max,offset,order,sort,query);
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
 //
 //
 //
