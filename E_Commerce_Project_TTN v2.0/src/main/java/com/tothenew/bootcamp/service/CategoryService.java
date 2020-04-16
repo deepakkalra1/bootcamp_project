@@ -171,62 +171,122 @@ public class CategoryService {
      *      *- if no exception raise.. that means not already registered with same name
      *      *-reistered it then
      */
-//    public CommonResponseVO<HashMap<String, String>> addCategoryByAdmin(String newCategoryName,Integer parentId)
-//    {
-//        int categoryIdCreated=0;
-//            int fetchedParentCategoryId;
-//        CommonResponseVO<HashMap<String, String>> commonResponseVO = new CommonResponseVO();
-//        //this hasmap will hold the actual data like.. newcreated-id
-//        HashMap<String, String> hashMap = new HashMap<String, String>();
-//
-//        //called all the categories which exist in db
-//        Iterable<Category> categories = categoryRespository.findAll();
-//
-//        //if parentid is not given.. that means jst to create parent ccategory
-//        if (parentId==null){
-//            categories.forEach(category -> {
-//                if (category.getParentCategory()==null){
-//
-//                    if (newCategoryName.equals(category.getName())){
-//                        throw new GiveMessageException(Arrays.asList(StatusCode.EXIST.toString()),
-//                                Arrays.asList("This name category Already Exist as Parent Category"));
-//                    }
-//                }
-//                else if (category.getParentCategory().getName().equals(newCategoryName)){
-//                    throw new GiveMessageException(Arrays.asList(StatusCode.EXIST.toString()),
-//                            Arrays.asList("This name category Already Exist as Child Category"));
-//
-//                }
-//            });
-//            Category category = new Category();
-//            category.setName(newCategoryName);
-//            categoryRespository.save(category);
-//            categoryIdCreated= categoryRespository.findByName(newCategoryName).getId();
-//            hashMap.put("categoryNameCreated",newCategoryName);
-//            hashMap.put("createdAs",StatusCode.PARENT.toString());
-//
-//        }
-//        else {
-//
-//            Iterable<Product> products = productRepository.findAll();
-//            products.forEach(product -> {
-//                if (product.getCategory().getId()==parentId){
-//                    throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
-//                            Arrays.asList("This category with parent ID="+parentId+" can not be created since products are attached to this Parent Category already")
-//                            );
-//                }
-//            });
-//
-//
-//
-//
-//        }
-//
-//
-//
-//
-//        hashMap.put("newCategoryId", String.valueOf(categoryIdCreated));
-//        commonResponseVO.setData(hashMap);
-//    return commonResponseVO;
-//    }
+    public CommonResponseVO<HashMap<String, String>> addCategoryByAdmin(String newCategoryName,Integer parentId)
+    {
+        int categoryIdCreated=0;
+            int fetchedParentCategoryId;
+        CommonResponseVO<HashMap<String, String>> commonResponseVO = new CommonResponseVO();
+        //this hasmap will hold the actual data like.. newcreated-id
+        HashMap<String, String> hashMap = new HashMap<String, String>();
+
+        //called all the categories which exist in db
+        Iterable<Category> categories = categoryRespository.findAll();
+
+        //if parentid is not given.. that means jst to create parent ccategory
+        if (parentId==null){
+            categories.forEach(category -> {
+                if (category.getParentCategory()==null){
+
+                    if (newCategoryName.equals(category.getName())){
+                        throw new GiveMessageException(Arrays.asList(StatusCode.EXIST.toString()),
+                                Arrays.asList("This name category Already Exist as Parent Category"));
+                    }
+                }
+                else if (category.getParentCategory().getName().equals(newCategoryName)){
+                    throw new GiveMessageException(Arrays.asList(StatusCode.EXIST.toString()),
+                            Arrays.asList("This name category Already Exist as Child Category"));
+
+                }
+            });
+            Category category = new Category();
+            category.setName(newCategoryName);
+            categoryRespository.save(category);
+            categoryIdCreated= categoryRespository.findByName(newCategoryName).getId();
+            hashMap.put("categoryNameCreated",newCategoryName);
+            hashMap.put("createdAs",StatusCode.PARENT.toString());
+        }
+        else {
+            Iterable<Product> products = productRepository.findAll();
+            products.forEach(product -> {
+                try {
+                    int productParentId = product.getCategory().getId();
+                    if (productParentId == parentId.intValue()) {
+                        throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+                                Arrays.asList("This category with parent ID=" + parentId.intValue() + " can not be created since products are attached to this Parent Category already")
+                        );
+                    }
+                }catch (NullPointerException e){
+                }
+            });
+
+            fetchedParentCategoryId=parentId.intValue();
+            while (true) {
+                try {
+
+                    Iterable<Category> parentCategories = categoryRespository.findByParentId(fetchedParentCategoryId);
+                    parentCategories.forEach(parentCategory -> {
+
+                        if (parentCategory.getName().equals(newCategoryName)) {
+                            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+                                    Arrays.asList("Category name already EXIST in the ^ Tree"));
+
+                        }
+                    });
+                }catch (NullPointerException e){
+                }
+                try {
+                    Category category = categoryRespository.findById(fetchedParentCategoryId).get();
+                    fetchedParentCategoryId = category.getParentCategory().getId();
+
+                }catch (NullPointerException ee){
+                    Category ToppestCategory = categoryRespository.findById(fetchedParentCategoryId).get();
+
+                    if (ToppestCategory.getName().equals(newCategoryName)){
+                        throw new GiveMessageException(Arrays.asList( StatusCode.FAILED.toString()),Arrays.asList("Category name already EXIST in the ^ Tree"));
+                    }
+                    System.out.println("No more parent Exist futher"); StatusCode.FAILED.toString();
+                    break;
+                }
+
+            }
+
+            fetchedParentCategoryId=parentId.intValue();
+                Category parentCategory = categoryRespository.findById(fetchedParentCategoryId).get();
+
+                /*
+                this method is to check whether the category name eist down in the tree
+                 */
+               checkCategoryNameExistDownInTree(parentCategory,newCategoryName);
+                Category newChildCategory = new Category();
+                newChildCategory.setName(newCategoryName);
+                newChildCategory.setParentCategory(parentCategory);
+                categoryRespository.save(newChildCategory);
+               categoryIdCreated= categoryRespository.findByName(newCategoryName).getId();
+            hashMap.put("categoryNameCreated",newCategoryName);
+            hashMap.put("createdAs",StatusCode.CHILD.toString());
+        }
+        hashMap.put("newCategoryId", String.valueOf(categoryIdCreated));
+        commonResponseVO.setData(hashMap);
+    return commonResponseVO;
+    }
+
+
+
+
+
+
+    public void checkCategoryNameExistDownInTree(Category category,String newCategoryName){
+        Iterable<Category> categories = categoryRespository.findByParentId(category.getId());
+        if (categories==null){
+            return;
+        }
+        categories.forEach(category1 -> {
+            if (category1.getName().equals(newCategoryName)){
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+                        Arrays.asList("Category name already EXIST in the !^ Tree"));
+            }
+            checkCategoryNameExistDownInTree(category1,newCategoryName);
+        });
+
+    }
 }
