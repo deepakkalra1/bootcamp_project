@@ -149,5 +149,15 @@ public class Category {
     }
 
 
-    
+
+
+
+    //------------------------------->seller category API's
+    //------------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/view/categories")
+    public ResponseEntity viewCategoriesBySeller( )
+    {
+        CommonResponseVO commonResponseVO= categoryService.viewCategoriesBySeller();
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
 }

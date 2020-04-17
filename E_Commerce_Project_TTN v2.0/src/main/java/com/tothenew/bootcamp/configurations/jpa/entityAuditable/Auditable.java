@@ -1,5 +1,6 @@
 package com.tothenew.bootcamp.configurations.jpa.entityAuditable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -16,16 +17,25 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class Auditable {
 
+    @JsonIgnore
     @CreatedBy
     protected String createdBy;
+
+    @JsonIgnore
     @CreatedDate
     @Temporal(TIMESTAMP)
     protected Date createdDate;
+
+    @JsonIgnore
     @LastModifiedBy
     protected String lastModifiedBy;
+
+    @JsonIgnore
     @LastModifiedDate
     @Temporal(TIMESTAMP)
     protected Date lastModifiedDate;
+
+    @JsonIgnore
     @Version
     private Integer version;
 

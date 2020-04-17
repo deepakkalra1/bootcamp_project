@@ -699,4 +699,55 @@ public class CategoryService {
         CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
         return commonResponseVO;
     }
+
+
+
+
+
+    //--------------------------------------------------------------------------------------------------------->
+    public CommonResponseVO<LinkedHashMap> viewCategoriesBySeller(){
+        Iterable<Category> allCategories = categoryRespository.findAll();
+        List<Integer> idOfAllCategories = new ArrayList<>();
+        List<Category> leafNodeCategories = new ArrayList<>();
+        allCategories.forEach(category -> {
+            idOfAllCategories.add(category.getId());
+        });
+
+        idOfAllCategories.forEach(id->{
+              List<Category> categoryIterable = categoryRespository.findByParentIdInList(id);
+
+            System.out.println(categoryIterable.iterator().hasNext());
+            if (categoryIterable.iterator().hasNext()==false){
+
+                Category category =categoryRespository.findById(id).get();
+
+                leafNodeCategories.add(category);
+
+            }
+        });
+        int[] count = new int[]{0};
+        LinkedHashMap<String, Category> leafCategoryHashmap = new LinkedHashMap<>();
+
+        leafNodeCategories.forEach(singleLeafCategoryNode->{
+
+             singleLeafCategoryNode.setProductSet(null);
+             try {
+//singleLeafCategoryNode.setParentCategory(null);
+//singleLeafCategoryNode.setProductSet(null);
+
+                 Category parentCat = singleLeafCategoryNode.getParentCategory();
+                 parentCat.setProductSet(null);
+                 parentCat.setParentCategory(null);
+                 singleLeafCategoryNode.setParentCategory(parentCat);
+             }
+             catch (NullPointerException e){}
+
+           leafCategoryHashmap.put("leafCategoryNode_"+count[0]++,singleLeafCategoryNode);
+        });
+
+        CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>();
+        commonResponseVO.setData(leafCategoryHashmap);
+        return commonResponseVO;
+        
+    }
 }
