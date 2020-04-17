@@ -112,7 +112,8 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
                 .antMatchers("/user/admin/view/category/{id}").anonymous()
                 .antMatchers("/user/admin/view/categories").anonymous()
                 .antMatchers("/user/admin/update/category/{id}/{name}").anonymous()
-                .antMatchers("/user/admin/add/category-metadata").anonymous()
+                .antMatchers("/user/admin/add/category-metadata-value").anonymous()
+                .antMatchers("/user/admin/update/category-metadata-value").anonymous()
 
                 .antMatchers("/doLogout").hasAnyRole("ADMIN", "CUSTOMER", "SELLER")
                 .anyRequest().authenticated()

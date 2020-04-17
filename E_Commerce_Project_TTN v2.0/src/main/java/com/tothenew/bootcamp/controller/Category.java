@@ -104,12 +104,50 @@ public class Category {
 
 
     //------------------------------------------------------------------------------------------------------------>
-    @PostMapping("/user/admin/add/category-metadata")
+    /*
+     {
+     * 	"categoryId":"8",
+     * 	"categoryMetadataFieldId":"4",
+     * 	"value_0":"41",
+     * 	"value_1":"42",
+     * 	"value_2":"43"
+     *
+     * }
+     */
+    @PostMapping("/user/admin/add/category-metadata-value")
     public ResponseEntity addCategoryMetadataByAdmin( @RequestBody HashMap<String, String> metadata)
     {
-        CommonResponseVO commonResponseVO= categoryService.addCategoryMetadataByAdmin(metadata);
+        CommonResponseVO commonResponseVO= categoryService.addCategoryMetadataValueByAdmin(metadata);
         return new ResponseEntity(commonResponseVO, HttpStatus.OK);
     }
 
 
+
+
+
+    //------------------------------------------------------------------------------------------------------------>
+    /***
+     *
+     * @param metadata
+     * @return
+     * @desciption- api will update by adding new values and deleting old value and yet maintaining uniquness
+     * in values of Category_metadata_values
+     *
+     * {
+     * 	"categoryId":"8",
+     * 	"categoryMetadataFieldId":"7",
+     * 	"delete_value_0":"43",
+     * 	"add_value_0":"44"
+     *
+     * }
+     * */
+    @PutMapping("/user/admin/update/category-metadata-value")
+    public ResponseEntity updateCategoryMetadataByAdmin( @RequestBody HashMap<String, String> metadata)
+    {
+        CommonResponseVO commonResponseVO= categoryService.updateCategoryMetadataValueByAdmin(metadata);
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
+
+
+    
 }

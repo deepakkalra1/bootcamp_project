@@ -23,6 +23,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Service
 public class CategoryService {
@@ -512,7 +513,13 @@ public class CategoryService {
 
 
     //--------------------------------------------------------------------------------------------------->
-    public CommonResponseVO addCategoryMetadataByAdmin(HashMap<String, String> metadata){
+    /***
+     *
+     * @param metadata
+     * @return
+     *
+     */
+    public CommonResponseVO addCategoryMetadataValueByAdmin(HashMap<String, String> metadata){
 
         CategoryMetadataValue categoryMetadataValue = new CategoryMetadataValue();
         try {
@@ -544,23 +551,36 @@ public class CategoryService {
                         values=entry.getValue().toString();
                     }
                     else {
+                        String[] sepratedValues = values.split(",");
+                        for (String val:sepratedValues){
+                            if (entry.getValue().toString().equals(val)){
+                                throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
+                                        Arrays.asList("Duplicate values are given, Values must be unique"));
+                            }
+                        }
                         values+=","+entry.getValue().toString();
                     }
 
                     exist=true;
 
                 }
+                else if(entry.getKey().toString().equals("categoryId") || entry.getKey().toString().equals("categoryMetadataFieldId")){
+                    continue;
+                }
+                else {
+                    throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
+                            Arrays.asList("Unknown keys are being passed"));
+                }
             }
             if (exist==false){
                 throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
                         Arrays.asList("No values were provided"));
             }
-
             categoryMetadataValue.setCategoryValue(values);
             categoryMetadataValueRepository.save(categoryMetadataValue);
         }catch (NullPointerException e){
             throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString())
-            ,Arrays.asList("Provided key Does not match the required key"));
+            ,Arrays.asList("Either Key is not proved Or Does not match the required key"));
         }
         catch (NumberFormatException number){
             throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
@@ -569,13 +589,114 @@ public class CategoryService {
         catch (NoSuchElementException ele){
             throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
                     Arrays.asList("Either Category Id or Field Id provided does not exist"));
-
         }
-
         CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
         return commonResponseVO;
+    }
 
 
 
+
+
+    public CommonResponseVO updateCategoryMetadataValueByAdmin(HashMap<String, String> metadata){
+
+        CategoryMetadataValue categoryMetadataValue = new CategoryMetadataValue();
+        try {
+            int categoryId = Integer.parseInt( metadata.get("categoryId"));
+            metadata.remove("categoryId");
+            int categoryMetadataFieldId = Integer.parseInt( metadata.get("categoryMetadataFieldId"));
+            metadata.remove("categoryMetadataFieldId");
+            Iterator<CategoryMetadataValue> it = categoryMetadataValueRepository.findValueCombinationOfFieldIdAndCategoryId(categoryMetadataFieldId,categoryId).iterator();
+            if (it.hasNext()==false){
+                throw new GiveMessageException(Arrays.asList(StatusCode.EXIST.toString()),
+                        Arrays.asList("Value for the combination of category id and field id does not exist"));
+            }
+            categoryMetadataValue= it.next();
+            String values = categoryMetadataValue.getCategoryValue();
+            String[] valArr = values.split(",");
+            List<String> valuesList=new ArrayList<>();
+            for (String val:valArr){
+                valuesList.add(val);
+            }
+            int count[] = new int[]{0};
+
+            Set<Entry<String, String>> entrySet= metadata.entrySet();
+            for (Entry entry: entrySet) {
+
+                int indexesOfValueListToBeDeleted=-1;
+                boolean eligibleToBeDeleted=false;
+                if (Pattern.matches("delete_value_[0-9]*$", entry.getKey().toString())) {
+                    eligibleToBeDeleted=true;
+                    for (String val : valuesList) {
+                        if (val.equals(entry.getValue().toString())) {
+                            indexesOfValueListToBeDeleted=valuesList.indexOf(val);
+
+                        }
+                    }
+
+                }
+                else if(Pattern.matches("add_value_[0-9]*$", entry.getKey().toString())){
+                    continue;
+                }
+                else {
+                    throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
+                            Arrays.asList("Unknown keys are being passed"));
+
+                }
+                if (indexesOfValueListToBeDeleted!=-1) {
+                    valuesList.remove(indexesOfValueListToBeDeleted);
+                    eligibleToBeDeleted=false;
+
+                }
+                if (eligibleToBeDeleted){
+                    throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                            Arrays.asList("Value to be deleted either does not exist or is in wrong format"));
+                }
+                metadata.remove(entry.getKey());
+            }
+            for (Entry entry: entrySet) {
+                if (Pattern.matches("add_value_[0-9]*$", entry.getKey().toString())) {
+                    for (String val : valuesList) {
+                        if (val.equals(entry.getValue().toString())) {
+                            throw new GiveMessageException(Arrays.asList(StatusCode.EXIST.toString()),
+                                    Arrays.asList("New value given to be added is not unique"));
+                        }
+
+                    }
+                    valuesList.add(entry.getValue().toString());
+
+                }
+                else {
+                    throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
+                            Arrays.asList("Unknown keys are being passed"));
+
+                }
+            }
+            String finalValue="";
+            for (String val:valuesList){
+                if (finalValue.equals("")){
+                    finalValue=val;
+                }
+                else {
+                    finalValue+=","+val;
+                }
+            }
+            categoryMetadataValue.setCategoryValue(finalValue);
+            categoryMetadataValueRepository.save(categoryMetadataValue);
+        }
+        catch (NullPointerException e){
+            throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString())
+                    ,Arrays.asList("Either Key is not proved Or Does not match the required key"));
+        }
+        catch (NumberFormatException number){
+            throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),
+                    Arrays.asList("Either Category Id or Field Id is not provided or are in wrong format"));
+        }
+        catch (NoSuchElementException ele){
+            throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                    Arrays.asList("Either Category Id or Field Id provided does not exist"));
+        }
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return commonResponseVO;
     }
 }
