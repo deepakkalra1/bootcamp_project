@@ -2,10 +2,7 @@ package com.tothenew.bootcamp.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tothenew.bootcamp.entity.ProductContent.Category;
-import com.tothenew.bootcamp.entity.ProductContent.CategoryMetadataField;
-import com.tothenew.bootcamp.entity.ProductContent.CategoryMetadataValue;
-import com.tothenew.bootcamp.entity.ProductContent.Product;
+import com.tothenew.bootcamp.entity.ProductContent.*;
 import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.exceptionHandling.GiveMessageException;
 import com.tothenew.bootcamp.pojo.CategoryMetadataValuePojo;
@@ -39,8 +36,10 @@ public class CategoryService {
     @Autowired
     ProductRepository productRepository;
 
+
     @Autowired
     CategoryMetadataValueRepository categoryMetadataValueRepository;
+
 
 
     public CommonResponseVO addFieldByAdmin(String fieldName){
@@ -338,6 +337,11 @@ public class CategoryService {
     }
 
 
+
+
+
+
+//---------------------------------------------------------------------------------------------------------->
     public CommonResponseVO<LinkedHashMap> viewSingleCategoryByAdmin(int id){
         CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>();
 
@@ -601,6 +605,8 @@ public class CategoryService {
 
 
 
+
+    //----------------------------------------------------------------------------------------------------->
     public CommonResponseVO updateCategoryMetadataValueByAdmin(HashMap<String, String> metadata){
 
         CategoryMetadataValue categoryMetadataValue = new CategoryMetadataValue();
@@ -732,7 +738,7 @@ public class CategoryService {
 //                    int sizeOfmetadata = listOfCategoryMetadata.size();
 //                    if (sizeOfmetadata>0){
 //                        LinkedHashMap<String, LinkedHashMap> metadataValueHashmap = new LinkedHashMap<>();
-//                    for (int i=0;i<=sizeOfmetadata;i++){
+//                    for (int i=0;i<sizeOfmetadata;i++){
 //                        System.out.println(i);
 //                        CategoryMetadataValue categoryMetadataValue = listOfCategoryMetadata.get(i);
 //                        CategoryMetadataValuePojo categoryMetadataValuePojo = new CategoryMetadataValuePojo();
@@ -843,29 +849,102 @@ public class CategoryService {
 
     //--------------------------------------------------------------------------------------------------------->
     public CommonResponseVO getFiltersOfCategoryByCustomer(int categoryId){
+        LinkedHashMap<String, LinkedHashMap> finalFilters = new LinkedHashMap<>();
             List<CategoryMetadataValue> filters = new ArrayList<>();
             LinkedHashMap<String, CategoryMetadataValue> filterHashmap = new LinkedHashMap<>();
-        try {
-            Category category = categoryRespository.findById(categoryId).get();
-        }
-        catch (NoSuchElementException nosuch){
-            throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
-                    Arrays.asList("Category Id provided Does Not Exist"));
+            LinkedHashMap<String, String> minAndMaxPriceHashmap = new LinkedHashMap<>();
 
-        }
+            /*
+            if category id is not present
+             */
+            Category category = categoryRespository.findById(categoryId).get();
+
+
+        /*
+        fetcching categoryMetadataFilter for provided id
+         */
             int[] count = new int[]{0};
             filters = categoryMetadataValueRepository.findByCategoryId(categoryId);
-            if(filters.isEmpty()){
-                throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
-                        Arrays.asList("No filters present for provided category id"));
-            }
             filters.forEach(filter->{
                 filter.setCategory(null);
                 filterHashmap.put("filter_"+count[0]++,filter);
             });
+            count[0]=0;
+
+
+
+        /*
+        fetching brands,min and max price for provided category id
+         */
+        Set<String> brandNames = new HashSet<>();
+        Set<Integer> productPrices = new HashSet<>();
+            LinkedHashMap<String, String> brandsHashmap = new LinkedHashMap<>();
+        findBrandNameDownInTree(categoryId,brandNames,productPrices);
+            brandNames.forEach(brandName->{
+                brandsHashmap.put("brandName_"+count[0]++,brandName);
+                System.out.println(brandName);
+            });
+            int min = Collections.min(productPrices);
+            int max = Collections.max(productPrices);
+            minAndMaxPriceHashmap.put("minPrice",String.valueOf(min));
+            minAndMaxPriceHashmap.put("maxPrice",String.valueOf(max));
+
+
+        /*
+        adding all seprate  filters like brands,metadataValues etc
+         */
+        finalFilters.put("metdataFilters",filterHashmap);
+        finalFilters.put("brands",brandsHashmap);
+        finalFilters.put("minAndMaxPrice",minAndMaxPriceHashmap);
         CommonResponseVO<LinkedHashMap> commonResponseVO =
                 new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
-        commonResponseVO.setData(filterHashmap);
+        commonResponseVO.setData(finalFilters);
         return commonResponseVO;
+    }
+
+
+
+
+
+
+    //--------------------------------------------------------------------------------------------------------->
+    /**
+     * @param id
+     * @return
+     * 1->adding products brands of provided category id..(if it is last)
+     * 2-> calling itself
+     * so that if any child category of provided catId is there.. is can add product of them..if it does not
+     * have any product assigned..it will repeat itself till.. it reach to case.. when no category is further
+     */
+    public void findBrandNameDownInTree(int id,Set<String> brandNames,Set<Integer> productPrices){
+        Category category = categoryRespository.findById(id).get();
+
+        //fetching no of product realated to fetchhed category ..
+        int size = category.getProductSet().size();
+
+        //this loop will iterate through all the products and add its brand name
+        for (int i=0;i<size;i++){
+            //adding brand name of looped product
+            brandNames.add(category.getProductSet().get(i).getBrand());
+           List<ProductVariation> relatedPoductVariations= category.getProductSet().get(i).getProductVariationlist();
+
+           //this  loop will find product variation prices and add it into SET(productPrices)
+           for (int j=0;j<relatedPoductVariations.size();j++){
+               productPrices.add(relatedPoductVariations.get(j).getPrice());
+           }
+            System.out.println(relatedPoductVariations.size());
+        }
+
+        Iterable<Category> categories = categoryRespository.findByParentId(id);
+        if (categories.iterator().hasNext()==false){
+            return ;
+        }
+        else {
+            categories.forEach(category1 -> {
+                findBrandNameDownInTree(category1.getId(),brandNames,productPrices);
+            });
+        }
+
+        return ;
     }
 }
