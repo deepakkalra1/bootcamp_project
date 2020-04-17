@@ -780,4 +780,60 @@ public class CategoryService {
         return commonResponseVO;
 
     }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------->
+    public CommonResponseVO viewCategoriesByCustomer(Integer categoryId){
+        LinkedHashMap<String, Category> allCategoriesMap = new LinkedHashMap<>();
+        List<Category> categoryList;
+        int[] count = new int[]{0};
+        if (categoryId!=null){
+            try {
+                Category category = categoryRespository.findById(categoryId.intValue()).get();
+            }
+            catch (NoSuchElementException nosuch){
+                throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                        Arrays.asList("Category Id provided Does Not Exist"));
+
+            }
+
+            categoryList = categoryRespository.findByParentIdInList(categoryId.intValue());
+            //if immediate children are present of provided category id
+            if (categoryList.iterator().hasNext()){
+                categoryList.forEach(childCategory->{
+
+                    childCategory.setProductSet(null);
+                    childCategory.setParentCategory(null);
+                    childCategory.setCategoryMetadataValues(null);
+                    childCategory.setParentCategory(null);
+                    allCategoriesMap.put("childCategory_"+count[0]++,childCategory);
+                });
+
+            }
+            //if no child of provided is present
+            else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.NOT_AVAILABLE.toString())
+                ,Arrays.asList("No immediate child Categories Present"));
+            }
+
+        }else {
+            categoryList = categoryRespository.findParentCategories();
+
+            categoryList.forEach(category -> {
+                category.setProductSet(null);
+                category.setParentCategory(null);
+                category.setCategoryMetadataValues(null);
+                category.setParentCategory(null);
+                allCategoriesMap.put("parentCategory_"+count[0]++,category);
+            });
+
+        }
+
+        CommonResponseVO<LinkedHashMap<String, Category>> commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(allCategoriesMap);
+        return commonResponseVO;
+    }
 }

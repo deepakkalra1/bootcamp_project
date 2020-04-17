@@ -160,4 +160,17 @@ public class Category {
         CommonResponseVO commonResponseVO= categoryService.viewCategoriesBySeller();
         return new ResponseEntity(commonResponseVO, HttpStatus.OK);
     }
+
+
+
+
+
+    //------------------------------->customer category API's
+    //------------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/customer/view/categories")
+    public ResponseEntity viewCategoriesByCustomer(@RequestParam(name = "categoryId",required = false)Integer categoryId )
+    {
+        CommonResponseVO commonResponseVO= categoryService.viewCategoriesByCustomer(categoryId);
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
 }

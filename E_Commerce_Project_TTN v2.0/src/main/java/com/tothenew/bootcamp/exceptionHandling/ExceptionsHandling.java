@@ -14,6 +14,7 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.UnexpectedTypeException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class ExceptionsHandling {
@@ -157,6 +158,18 @@ public class ExceptionsHandling {
     public ResponseEntity UnexpectedValidationException(UnexpectedTypeException e){
         CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.FAILED.toString())
                 ,Arrays.asList(e.getLocalizedMessage().toString())
+        );
+        return new ResponseEntity(commonResponseVO,HttpStatus.BAD_REQUEST);
+    }
+
+
+
+
+
+    @ExceptionHandler(value = NumberFormatException.class)
+    public ResponseEntity invalidFormatAssignedException(NumberFormatException e){
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.FAILED.toString())
+                ,Arrays.asList("Invalid format is provided")
         );
         return new ResponseEntity(commonResponseVO,HttpStatus.BAD_REQUEST);
     }
