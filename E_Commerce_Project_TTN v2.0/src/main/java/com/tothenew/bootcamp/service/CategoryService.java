@@ -836,4 +836,36 @@ public class CategoryService {
         commonResponseVO.setData(allCategoriesMap);
         return commonResponseVO;
     }
+
+
+
+
+
+    //--------------------------------------------------------------------------------------------------------->
+    public CommonResponseVO getFiltersOfCategoryByCustomer(int categoryId){
+            List<CategoryMetadataValue> filters = new ArrayList<>();
+            LinkedHashMap<String, CategoryMetadataValue> filterHashmap = new LinkedHashMap<>();
+        try {
+            Category category = categoryRespository.findById(categoryId).get();
+        }
+        catch (NoSuchElementException nosuch){
+            throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                    Arrays.asList("Category Id provided Does Not Exist"));
+
+        }
+            int[] count = new int[]{0};
+            filters = categoryMetadataValueRepository.findByCategoryId(categoryId);
+            if(filters.isEmpty()){
+                throw new GiveMessageException(Arrays.asList(StatusCode.DOES_NOT_EXIST.toString()),
+                        Arrays.asList("No filters present for provided category id"));
+            }
+            filters.forEach(filter->{
+                filter.setCategory(null);
+                filterHashmap.put("filter_"+count[0]++,filter);
+            });
+        CommonResponseVO<LinkedHashMap> commonResponseVO =
+                new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(filterHashmap);
+        return commonResponseVO;
+    }
 }

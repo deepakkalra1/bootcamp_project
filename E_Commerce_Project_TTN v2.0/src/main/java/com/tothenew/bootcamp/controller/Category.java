@@ -173,4 +173,16 @@ public class Category {
         CommonResponseVO commonResponseVO= categoryService.viewCategoriesByCustomer(categoryId);
         return new ResponseEntity(commonResponseVO, HttpStatus.OK);
     }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/customer/view/category/filters")
+    public ResponseEntity getFiltersOfCategoryByCustomer(@RequestParam(name = "categoryId")int categoryId )
+    {
+        CommonResponseVO commonResponseVO= categoryService.getFiltersOfCategoryByCustomer(categoryId);
+        return new ResponseEntity(commonResponseVO, HttpStatus.OK);
+    }
 }
