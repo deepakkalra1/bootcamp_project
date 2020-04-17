@@ -1,11 +1,14 @@
 package com.tothenew.bootcamp.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tothenew.bootcamp.entity.ProductContent.Category;
 import com.tothenew.bootcamp.entity.ProductContent.CategoryMetadataField;
 import com.tothenew.bootcamp.entity.ProductContent.CategoryMetadataValue;
 import com.tothenew.bootcamp.entity.ProductContent.Product;
 import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.exceptionHandling.GiveMessageException;
+import com.tothenew.bootcamp.pojo.CategoryMetadataValuePojo;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.repositories.CategoryMetadataFieldRepository;
 import com.tothenew.bootcamp.repositories.CategoryMetadataValueRepository;
@@ -475,7 +478,7 @@ public class CategoryService {
         }
         allCategories.forEach(category -> {
             category.setParentCategory(null);
-            category.setProductSet(null);
+            category. setProductSet(null);
 //            List<Product> productList = category.getProductSet();
 //            productList.forEach(product -> {
 //                product.setProductVariationlist(null);
@@ -720,6 +723,35 @@ public class CategoryService {
             if (categoryIterable.iterator().hasNext()==false){
 
                 Category category =categoryRespository.findById(id).get();
+//                ObjectMapper objectMapper = new ObjectMapper();
+//                try {
+//
+//                    List<CategoryMetadataValue> listOfCategoryMetadata = category.getCategoryMetadataValues();
+//
+//                    System.out.println(listOfCategoryMetadata);
+//                    int sizeOfmetadata = listOfCategoryMetadata.size();
+//                    if (sizeOfmetadata>0){
+//                        LinkedHashMap<String, LinkedHashMap> metadataValueHashmap = new LinkedHashMap<>();
+//                    for (int i=0;i<=sizeOfmetadata;i++){
+//                        System.out.println(i);
+//                        CategoryMetadataValue categoryMetadataValue = listOfCategoryMetadata.get(i);
+//                        CategoryMetadataValuePojo categoryMetadataValuePojo = new CategoryMetadataValuePojo();
+//
+//                        categoryMetadataValuePojo.setCategoryId(categoryMetadataValue.getCategory().getId());
+//                        categoryMetadataValuePojo.setCategoryMetadataFieldId(categoryMetadataValue.getCategoryMetadataField().getId());
+//                        categoryMetadataValuePojo.setCategoryValue(categoryMetadataValue.getCategoryValue());
+//
+//                        String jsonString = objectMapper.writeValueAsString(categoryMetadataValuePojo);
+//                        System.out.println(jsonString);
+//                         LinkedHashMap pojoConvertedHashmap = objectMapper.readValue(jsonString,LinkedHashMap.class);
+//                        metadataValueHashmap.put("metadataValue_"+i,pojoConvertedHashmap);
+//                    }
+//                    category.setLinkedCategoryValueHashMap(metadataValueHashmap);
+//
+//                    }
+//                }
+//                catch (NullPointerException e){}
+//                catch (JsonProcessingException jsonEx){}
 
                 leafNodeCategories.add(category);
 
@@ -727,14 +759,10 @@ public class CategoryService {
         });
         int[] count = new int[]{0};
         LinkedHashMap<String, Category> leafCategoryHashmap = new LinkedHashMap<>();
-
         leafNodeCategories.forEach(singleLeafCategoryNode->{
 
              singleLeafCategoryNode.setProductSet(null);
              try {
-//singleLeafCategoryNode.setParentCategory(null);
-//singleLeafCategoryNode.setProductSet(null);
-
                  Category parentCat = singleLeafCategoryNode.getParentCategory();
                  parentCat.setProductSet(null);
                  parentCat.setParentCategory(null);
@@ -742,12 +770,14 @@ public class CategoryService {
              }
              catch (NullPointerException e){}
 
+
+
            leafCategoryHashmap.put("leafCategoryNode_"+count[0]++,singleLeafCategoryNode);
         });
 
         CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>();
         commonResponseVO.setData(leafCategoryHashmap);
         return commonResponseVO;
-        
+
     }
 }

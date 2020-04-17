@@ -1,8 +1,10 @@
 package com.tothenew.bootcamp.entity.ProductContent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tothenew.bootcamp.configurations.jpa.entityAuditable.Auditable;
 
 import javax.persistence.*;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -22,8 +24,18 @@ public class Category extends Auditable {
     @JoinColumn(name = "parent_id")
     private Category parentCategory;
 
+    //createdd for purpose of sending metadata values also with the category info... since it is a list.. so
+    //created hasmap below which will be sent.. when i ll convert each content of list into hashmap and assign them to
+    //clinkedHashmap below
+    @JsonIgnore
+    @Transient
+    @OneToMany
+    @JoinColumn(name = "category_id")
+    List<CategoryMetadataValue> categoryMetadataValues;
 
-
+    @JsonIgnore
+    @Transient
+    LinkedHashMap linkedCategoryValueHashMap;
     //--------------------------------------------------------------------------------------------------------------->
 
     public int getId() {
@@ -58,4 +70,20 @@ public class Category extends Auditable {
         this.parentCategory = parentCategory;
     }
 
+
+    public List<CategoryMetadataValue> getCategoryMetadataValues() {
+        return categoryMetadataValues;
+    }
+
+    public void setCategoryMetadataValues(List<CategoryMetadataValue> categoryMetadataValues) {
+        this.categoryMetadataValues = categoryMetadataValues;
+    }
+
+    public LinkedHashMap getLinkedCategoryValueHashMap() {
+        return linkedCategoryValueHashMap;
+    }
+
+    public void setLinkedCategoryValueHashMap(LinkedHashMap linkedCategoryValueHashMap) {
+        this.linkedCategoryValueHashMap = linkedCategoryValueHashMap;
+    }
 }
