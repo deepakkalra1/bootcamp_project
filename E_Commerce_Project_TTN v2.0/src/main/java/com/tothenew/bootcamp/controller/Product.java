@@ -1,14 +1,15 @@
 package com.tothenew.bootcamp.controller;
 
+import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 @RestController
 public class Product {
@@ -31,5 +32,24 @@ public class Product {
                 productService.addProductBySeller(token,productName,cayegoryId,brandName,description, is_cancelable,is_returnable);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
 
+    }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @PostMapping("/user/seller/product-variation/add")
+    public ResponseEntity addProductVariation(@RequestHeader(value = "Authorization") String tokenString,
+                                              @RequestParam(value = "productId")int productId,
+                                              @RequestParam(value = "primaryImage") String primaryImage,
+                                              @RequestBody LinkedHashMap<String, String> metadata,
+                                              @RequestParam(value = "quantity",required = false)Integer quantity,
+                                              @RequestParam(value = "price",required = false)Integer price
+                                              ){
+        String token = tokenString.split(" ")[1];
+        productService.addProductVariationForProduct(token,productId,primaryImage,metadata,quantity,price);
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
 }

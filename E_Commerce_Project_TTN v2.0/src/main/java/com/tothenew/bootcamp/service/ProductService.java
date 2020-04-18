@@ -4,17 +4,20 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.tothenew.bootcamp.constants.JwtUtility;
 import com.tothenew.bootcamp.entity.ProductContent.Category;
 import com.tothenew.bootcamp.entity.ProductContent.Product;
+import com.tothenew.bootcamp.entity.ProductContent.ProductVariation;
 import com.tothenew.bootcamp.entity.User.Seller;
 import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.exceptionHandling.GiveMessageException;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.repositories.CategoryRespository;
 import com.tothenew.bootcamp.repositories.ProductRepository;
+import com.tothenew.bootcamp.repositories.ProductVariationRepository;
 import com.tothenew.bootcamp.repositories.SellerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
@@ -28,6 +31,9 @@ public class ProductService {
 
     @Autowired
     CategoryRespository categoryRespository;
+
+    @Autowired
+    ProductVariationRepository productVariationRepository;
 
 
     //----------------------------------------------------------------------------------------------------------->
@@ -87,4 +93,48 @@ public class ProductService {
         }
 
     }
+
+
+    public void addProductVariationForProduct(String token,int productId,String primaryImage, LinkedHashMap<String, String>metadata
+                                                                            ,Integer quantity,Integer price
+    ){
+        String username = JwtUtility.findUsernameFromToken(token);
+        Seller seller = sellerRepository.findByEmail(username);
+        ProductVariation productVariation = new ProductVariation();
+        //since it returns optional.. so if not found.. will throw noSuchElementException
+        Product product = productRepository.findById(productId).get();
+
+        int quantityOfProductVariation=0;
+        if (quantity!=null){
+            quantityOfProductVariation=quantity.intValue();
+        }
+        int priceOfProductVariation=0;
+        if (price!=null){
+            priceOfProductVariation=price.intValue();
+        }
+        //checking if provided id' product belongs to current seller or not
+        if (product.getSeller_seller().getSellerOrganizationDetails().getSeller().getId() != seller.getId() ){
+            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+                    ,Arrays.asList("Provided Product Id does not belongs to seller = "+username));
+
+        }
+        //product should be active
+        if (product.isIs_active()==false){
+            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+                    ,Arrays.asList("Provided Product is not Active"));
+
+        }
+        //putting all values
+        productVariation.setMetadataHashmap(metadata);
+        productVariation.setPrice(priceOfProductVariation);
+        productVariation.setQuantity_available(quantityOfProductVariation);
+        productVariation.setPrimary_image(primaryImage);
+        productVariation.setProduct(product);
+        productVariationRepository.save(productVariation);
+    }
+
+
+
+
+
 }

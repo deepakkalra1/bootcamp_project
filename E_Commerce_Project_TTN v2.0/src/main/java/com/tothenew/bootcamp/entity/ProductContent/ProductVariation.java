@@ -35,6 +35,9 @@ public class ProductVariation  extends Auditable {
     private Product product;
 
 
+    boolean is_active =true;
+
+    String primary_image;
 
     //-------------------------------------------------------------------------------------------------------------->
     public int getId() {
@@ -81,10 +84,6 @@ public class ProductVariation  extends Auditable {
         this.metadataHashmap = metadataHashmap;
     }
 
-    public void setMetadataHashmap(HashMap<String, String> metadataHashmap) {
-        this.metadataHashmap = metadataHashmap;
-    }
-
     public void jsonMetadataStringSerialize() throws JsonProcessingException {
         this.metadata= JsonConversion.jsonSerialization(metadataHashmap);
     }
@@ -93,5 +92,20 @@ public class ProductVariation  extends Auditable {
         metadataHashmap=JsonConversion.jsonDeserialization(this.metadata);
     }
 
+    public boolean isIs_active() {
+        return is_active;
+    }
+
+    public void setIs_active(boolean is_active) {
+        this.is_active = is_active;
+    }
+
+    public String getPrimary_image() {
+        return primary_image;
+    }
+
+    public void setPrimary_image(String primary_image) {
+        this.primary_image = primary_image;
+    }
 }
 

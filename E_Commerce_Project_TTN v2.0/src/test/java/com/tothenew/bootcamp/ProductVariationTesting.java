@@ -180,4 +180,14 @@ public class ProductVariationTesting {
 
 
 
+    @Test
+    public void hasmapLoopTest(){
+        LinkedHashMap<String, String> hashMap = new LinkedHashMap<>();
+        hashMap.put("key1","value1");
+        hashMap.put("key2","value2");
+
+        hashMap.forEach((k,v)->{
+            System.out.println(k);
+        });
+    }
 }
