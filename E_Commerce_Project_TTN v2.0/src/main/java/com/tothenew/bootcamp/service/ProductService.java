@@ -23,9 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -325,7 +327,7 @@ tried to set dynamic filtering on entity..
 
         Product product = productRepository.findById(productId).get();
         if (product.getSeller_seller().getId()!=seller.getId()){
-            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+            throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
                     ,Arrays.asList("Provided product id does not belongs to you ~"+username));
         }
 
@@ -374,6 +376,30 @@ tried to set dynamic filtering on entity..
 
         CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
         commonResponseVO.setData(productVariationPojoLinkedHashMap);
+        return commonResponseVO;
+    }
+
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------>
+   @Transactional
+   @Modifying
+    public CommonResponseVO deleteProductBySeller(String token,int productId){
+        String username = JwtUtility.findUsernameFromToken(token);
+        Seller seller = sellerRepository.findByEmail(username);
+
+        Product product = productRepository.findById(productId).get();
+        if (product.getSeller_seller().getId()!=seller.getId()){
+            throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
+                    ,Arrays.asList("Provided product id does not belongs to you ~"+username));
+        }
+
+        productRepository.delete(product);
+
+        CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
         return commonResponseVO;
     }
 }

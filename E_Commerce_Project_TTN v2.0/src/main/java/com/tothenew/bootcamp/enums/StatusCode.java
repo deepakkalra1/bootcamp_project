@@ -29,7 +29,8 @@ public enum StatusCode {
     EXIST,
     PARENT,
     CHILD,
-    NOT_AVAILABLE
+    NOT_AVAILABLE,
+    UNAUTHORIZED
 
 
 }

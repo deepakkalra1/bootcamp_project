@@ -119,4 +119,18 @@ public class Product {
         CommonResponseVO commonResponseVO = productService.viewAllProductVariationsBySeller(token,max,offset, order, sort, query,productId);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @DeleteMapping("/user/seller/product/delete")
+    public ResponseEntity deleteProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                           @RequestParam(value = "productId")int productId)
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.deleteProductBySeller(token,productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
 }
