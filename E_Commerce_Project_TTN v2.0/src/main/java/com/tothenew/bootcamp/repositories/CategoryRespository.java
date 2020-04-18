@@ -22,6 +22,7 @@ public interface CategoryRespository extends CrudRepository<Category,Integer> {
     @Query(value = "select * from category where parent_id=:id",nativeQuery = true)
     List<Category> findByParentIdInList(int id);
 
+
     @Query(value = "select * from category where parent_id IS NULL",nativeQuery = true)
     List<Category> findParentCategories();
 }

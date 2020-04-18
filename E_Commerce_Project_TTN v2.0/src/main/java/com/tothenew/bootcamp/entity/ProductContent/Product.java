@@ -17,9 +17,9 @@ public class Product extends Auditable {
 
     private String description;
 
-    private boolean is_cancellable;
-    private boolean is_returnable;
-    private boolean is_active;
+    private boolean is_cancellable=true;
+    private boolean is_returnable=true;
+    private boolean is_active=false;
     private String brand;
 
 

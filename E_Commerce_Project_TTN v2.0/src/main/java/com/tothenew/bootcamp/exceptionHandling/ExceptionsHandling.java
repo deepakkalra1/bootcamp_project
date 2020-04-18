@@ -173,4 +173,16 @@ public class ExceptionsHandling {
         );
         return new ResponseEntity(commonResponseVO,HttpStatus.BAD_REQUEST);
     }
+
+
+
+
+
+    @ExceptionHandler(value = NoSuchElementException.class)
+    public ResponseEntity NoSuchElementException(NoSuchElementException e){
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.FAILED.toString())
+                ,Arrays.asList("Provided Data Invalid")
+        );
+        return new ResponseEntity(commonResponseVO,HttpStatus.BAD_REQUEST);
+    }
 }
