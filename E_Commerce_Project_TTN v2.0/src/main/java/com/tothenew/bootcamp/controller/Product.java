@@ -59,12 +59,26 @@ public class Product {
 
 
     //---------------------------------------------------------------------------------------------------------->
-    @PostMapping("/user/seller/product")
-    public ResponseEntity addProductVariation(@RequestHeader(value = "Authorization") String tokenString,
+    @GetMapping("/user/seller/product")
+    public ResponseEntity viewProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
                                               @RequestParam(value = "productId")int productId
     ){
         String token = tokenString.split(" ")[1];
         CommonResponseVO commonResponseVO = productService.viewProductBySeller(token,productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/product-variation")
+    public ResponseEntity viewProductVariationBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                              @RequestParam(value = "productVariationId")int productVariationId
+    ){
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewProductVariationBySeller(token,productVariationId);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
 }

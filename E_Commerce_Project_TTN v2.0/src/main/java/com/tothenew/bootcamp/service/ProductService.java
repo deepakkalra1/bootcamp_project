@@ -37,6 +37,7 @@ public class ProductService {
     ProductVariationRepository productVariationRepository;
 
 
+
     //----------------------------------------------------------------------------------------------------------->
     public CommonResponseVO addProductBySeller(String token,String productName, int cayegoryId, String brandName,String description,
                                                Boolean is_cancelable, Boolean is_returnable){
@@ -84,6 +85,11 @@ public class ProductService {
 
     }
 
+
+
+
+
+    //------------------------------------------------------------------------------------------------------->
     public void checkIfItIsLeafCategoryNode(int categoryId){
 
         Iterable<Category> categories= categoryRespository.findByParentId(categoryId);
@@ -96,6 +102,10 @@ public class ProductService {
     }
 
 
+
+
+
+    //------------------------------------------------------------------------------------------------------->
     public void addProductVariationForProduct(String token,int productId,String primaryImage, LinkedHashMap<String, String>metadata
                                                                             ,Integer quantity,Integer price
     ){
@@ -138,10 +148,10 @@ public class ProductService {
 
 
 
+    //------------------------------------------------------------------------------------------------------>
     public CommonResponseVO viewProductBySeller(String token,int productId){
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
-        ProductVariation productVariation = new ProductVariation();
         //since it returns optional.. so if not found.. will throw noSuchElementException
         Product product = productRepository.findById(productId).get();
 
@@ -164,17 +174,39 @@ public class ProductService {
         productCategory.setCategoryMetadataValues(null);
         productCategory.setProductSet(null);
 //        productCategory.setLinkedCategoryValueHashMap(null);
+
+        /*
+        this piece of code can help u to have product variation list with product
+         */
         product.setCategory(productCategory);
         List<ProductVariation>productVariations = product.getProductVariationlist();
         productVariations.forEach(variation->{
             variation.setProduct(null);
-
-
         });
         product.setProductVariationlist(productVariations);
         CommonResponseVO<Product> commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
         commonResponseVO.setData(product);
         return commonResponseVO;
 
+    }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------>
+    public CommonResponseVO viewProductVariationBySeller(String token,int productVariationId){
+        String username = JwtUtility.findUsernameFromToken(token);
+        Seller seller = sellerRepository.findByEmail(username);
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId).get();
+
+        if (productVariation.getProduct().getSeller_seller().getId()!=seller.getId()){
+            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+                    ,Arrays.asList("You are not owner of provided product variation ID"));
+        }
+        productVariation.setProduct(null);
+        CommonResponseVO<ProductVariation> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(productVariation);
+        return commonResponseVO;
     }
 }
