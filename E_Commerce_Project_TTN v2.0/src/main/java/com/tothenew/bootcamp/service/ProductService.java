@@ -13,6 +13,7 @@ import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.exceptionHandling.GiveMessageException;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.pojo.ProductPojo;
+import com.tothenew.bootcamp.pojo.ProductVariationPojo;
 import com.tothenew.bootcamp.repositories.CategoryRespository;
 import com.tothenew.bootcamp.repositories.ProductRepository;
 import com.tothenew.bootcamp.repositories.ProductVariationRepository;
@@ -226,9 +227,8 @@ public class ProductService {
     //------------------------------------------------------------------------------------------------------->
     public CommonResponseVO viewAllProductsOfSeller(String token,Integer max,Integer offset,String order
             ,String sort, String query
-    ){
-
-
+    )
+    {
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
         int maxNumberOfSellerProducts = productRepository.findProductsWithSellerId(seller.getId()).size();
@@ -309,5 +309,65 @@ tried to set dynamic filtering on entity..
 
 
     //------------------------------------------------------------------------------------------------------>
+    public CommonResponseVO viewAllProductVariationsBySeller(String token,Integer max,Integer offset,String order
+            ,String sort, String query,int productId
+    )
+    {
+        List<ProductVariation> productVariations;
+        String username = JwtUtility.findUsernameFromToken(token);
+        Seller seller = sellerRepository.findByEmail(username);
+        int maxNumberOProductVariation = productVariationRepository.findAllVariationByProductId(productId).size();
+        
+        int maxRecordsPerPage=maxNumberOProductVariation;
+        int pageOffset=0;
+        Sort.Direction direction= Sort.Direction.ASC;
+        String property="id";
 
+        LinkedHashMap<String, ProductVariationPojo> productVariationPojoLinkedHashMap = new LinkedHashMap<>();
+
+        if (offset!=null) {
+            pageOffset = offset.intValue();
+        }
+        if (max!=null) {
+            maxRecordsPerPage = max.intValue();
+        }
+
+        if (sort!=null) {
+            if (sort.toLowerCase().equals("asc")) {
+                direction = Sort.Direction.ASC;
+            } else if (sort.toLowerCase().equals("desc")) {
+                direction = Sort.Direction.DESC;
+            } else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
+            }
+        }
+
+        if (query!=null){
+            if (query.equals("name") || query.equals("categoryId") || query.equals("brand") || query.equals("id")){
+            }else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid. ONLY (id,brand,categoryId,name) is eligible"));
+            }
+            property=query;
+        }
+        Pageable pageable = PageRequest.of(pageOffset,maxRecordsPerPage,direction,property);
+        productVariations= productVariationRepository.findAllVariationByProductId(productId,pageable);
+        int[] count = new int[]{0};
+
+        productVariations.forEach(productVariation -> {
+            ProductVariationPojo productVariationPojo = new ProductVariationPojo();
+            productVariationPojo.setId(productVariation.getId());
+            productVariationPojo.setIs_active(productVariation.isIs_active());
+            productVariationPojo.setMetadataHashmap(productVariation.getMetadataHashmap());
+            productVariationPojo.setPrice(productVariation.getPrice());
+            productVariationPojo.setPrimary_image(productVariation.getPrimary_image());
+            productVariationPojo.setProduct_id(productVariation.getProduct().getId());
+            productVariationPojo.setQuantity_available(productVariation.getQuantity_available());
+
+            productVariationPojoLinkedHashMap.put("productVariation_"+count[0]++,productVariationPojo);
+        });
+
+        CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(productVariationPojoLinkedHashMap);
+        return commonResponseVO;
+    }
 }

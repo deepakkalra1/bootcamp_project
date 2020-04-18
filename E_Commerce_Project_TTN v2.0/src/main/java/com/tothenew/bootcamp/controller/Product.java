@@ -73,7 +73,7 @@ public class Product {
 
 
     //---------------------------------------------------------------------------------------------------------->
-    @GetMapping("/user/seller/product-variation")
+    @GetMapping("/user/seller/product/variation")
     public ResponseEntity viewProductVariationBySeller(@RequestHeader(value = "Authorization") String tokenString,
                                               @RequestParam(value = "productVariationId")int productVariationId
     ){
@@ -97,6 +97,26 @@ public class Product {
     {
         String token = tokenString.split(" ")[1];
         CommonResponseVO commonResponseVO = productService.viewAllProductsOfSeller(token,max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/product/variations")
+    public ResponseEntity viewAllProductVariationsBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                 @RequestParam(value = "max",required = false) Integer max,
+                                                 @RequestParam(value = "offset",required = false) Integer offset,
+                                                 @RequestParam(value = "order",required = false) String order,
+                                                 @RequestParam(value = "sort",required = false) String sort,
+                                                 @RequestParam(value = "query",required = false) String query,
+                                                           @RequestParam(value = "productId")int productId)
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewAllProductVariationsBySeller(token,max,offset, order, sort, query,productId);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
 }
