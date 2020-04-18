@@ -317,11 +317,17 @@ tried to set dynamic filtering on entity..
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
         int maxNumberOProductVariation = productVariationRepository.findAllVariationByProductId(productId).size();
-        
+
         int maxRecordsPerPage=maxNumberOProductVariation;
         int pageOffset=0;
         Sort.Direction direction= Sort.Direction.ASC;
         String property="id";
+
+        Product product = productRepository.findById(productId).get();
+        if (product.getSeller_seller().getId()!=seller.getId()){
+            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+                    ,Arrays.asList("Provided product id does not belongs to you ~"+username));
+        }
 
         LinkedHashMap<String, ProductVariationPojo> productVariationPojoLinkedHashMap = new LinkedHashMap<>();
 
