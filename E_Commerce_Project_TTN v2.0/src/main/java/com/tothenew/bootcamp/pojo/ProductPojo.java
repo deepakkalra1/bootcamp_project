@@ -1,47 +1,28 @@
-package com.tothenew.bootcamp.entity.ProductContent;
+package com.tothenew.bootcamp.pojo;
 
-import com.tothenew.bootcamp.configurations.jpa.entityAuditable.Auditable;
+import com.tothenew.bootcamp.entity.ProductContent.Category;
+import com.tothenew.bootcamp.entity.ProductContent.ProductVariation;
 import com.tothenew.bootcamp.entity.User.Seller;
-import org.codehaus.jackson.map.annotate.JsonFilter;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import java.util.List;
 
-
-@Entity
-@Table(name = "product")
-public class Product extends Auditable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ProductPojo {
     private int id;
-
     private String name;
-
     private String description;
-
-    private boolean is_cancellable=true;
-    private boolean is_returnable=true;
-    private boolean is_active=false;
+    private boolean is_cancellable;
+    private boolean is_returnable;
+    private boolean is_active;
     private String brand;
-
-
-    @ManyToOne
-    @JoinColumn(name = "seller_user_id")
-    private Seller seller_seller;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL)
-    private List<ProductVariation> productVariationlist;
-
-
-
-
-
-//--------------------------------------------------------------------------------------------------------------->
-
+    private int seller_id;
+    private int category_id;
+    private String category_name;
+    private List<ProductVariationPojo> productVariationlist;
+    //---------------------------------------------------------------------------------------------------->
 
 
     public int getId() {
@@ -100,27 +81,35 @@ public class Product extends Auditable {
         this.brand = brand;
     }
 
-    public Seller getSeller_seller() {
-        return seller_seller;
+    public int getSeller_id() {
+        return seller_id;
     }
 
-    public void setSeller_seller(Seller seller_seller) {
-        this.seller_seller = seller_seller;
+    public void setSeller_id(int seller_id) {
+        this.seller_id = seller_id;
     }
 
-    public Category getCategory() {
-        return category;
+    public int getCategory_id() {
+        return category_id;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategory_id(int category_id) {
+        this.category_id = category_id;
     }
 
-    public List<ProductVariation> getProductVariationlist() {
+    public List<ProductVariationPojo> getProductVariationlist() {
         return productVariationlist;
     }
 
-    public void setProductVariationlist(List<ProductVariation> productVariationlist) {
+    public void setProductVariationlist(List<ProductVariationPojo> productVariationlist) {
         this.productVariationlist = productVariationlist;
+    }
+
+    public String getCategory_name() {
+        return category_name;
+    }
+
+    public void setCategory_name(String category_name) {
+        this.category_name = category_name;
     }
 }

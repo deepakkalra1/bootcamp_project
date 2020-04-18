@@ -11,6 +11,8 @@ public interface ProductRepository extends CrudRepository<Product, Integer> {
     @Query(value = "select * from product where seller_user_id=:id AND name=:product_name AND category_id=:categoryId",nativeQuery = true)
     List<Product> findProductsWithSellerIdAndProductNameAndCategoryId(int id,String product_name,int categoryId);
 
+    @Query(value = "select * from product where seller_user_id=:id",nativeQuery = true)
+    List<Product> findProductsWithSellerId(int id);
 
 
 }

@@ -81,4 +81,17 @@ public class Product {
         CommonResponseVO commonResponseVO = productService.viewProductVariationBySeller(token,productVariationId);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/products")
+    public ResponseEntity viewAllProductBySeller(@RequestHeader(value = "Authorization") String tokenString)
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewAllProductsOfSeller(token);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
 }
