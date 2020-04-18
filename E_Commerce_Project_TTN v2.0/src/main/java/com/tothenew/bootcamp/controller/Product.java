@@ -52,4 +52,19 @@ public class Product {
         CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
+
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @PostMapping("/user/seller/product")
+    public ResponseEntity addProductVariation(@RequestHeader(value = "Authorization") String tokenString,
+                                              @RequestParam(value = "productId")int productId
+    ){
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewProductBySeller(token,productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
 }

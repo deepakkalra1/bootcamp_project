@@ -13,6 +13,7 @@ import com.tothenew.bootcamp.repositories.CategoryRespository;
 import com.tothenew.bootcamp.repositories.ProductRepository;
 import com.tothenew.bootcamp.repositories.ProductVariationRepository;
 import com.tothenew.bootcamp.repositories.SellerRepository;
+import javafx.scene.chart.CategoryAxis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -137,4 +138,43 @@ public class ProductService {
 
 
 
+    public CommonResponseVO viewProductBySeller(String token,int productId){
+        String username = JwtUtility.findUsernameFromToken(token);
+        Seller seller = sellerRepository.findByEmail(username);
+        ProductVariation productVariation = new ProductVariation();
+        //since it returns optional.. so if not found.. will throw noSuchElementException
+        Product product = productRepository.findById(productId).get();
+
+
+        //checking if provided id' product belongs to current seller or not
+        if (product.getSeller_seller().getSellerOrganizationDetails().getSeller().getId() != seller.getId() ){
+            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+                    ,Arrays.asList("Provided Product Id does not belongs to seller = "+username));
+
+        }
+        //product should be active
+        if (product.isIs_active()==false){
+            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+                    ,Arrays.asList("Provided Product is not Active"));
+
+        }
+        product.setSeller_seller(null);
+        Category productCategory = product.getCategory();
+        productCategory.setParentCategory(null);
+        productCategory.setCategoryMetadataValues(null);
+        productCategory.setProductSet(null);
+//        productCategory.setLinkedCategoryValueHashMap(null);
+        product.setCategory(productCategory);
+        List<ProductVariation>productVariations = product.getProductVariationlist();
+        productVariations.forEach(variation->{
+            variation.setProduct(null);
+
+
+        });
+        product.setProductVariationlist(productVariations);
+        CommonResponseVO<Product> commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(product);
+        return commonResponseVO;
+
+    }
 }
