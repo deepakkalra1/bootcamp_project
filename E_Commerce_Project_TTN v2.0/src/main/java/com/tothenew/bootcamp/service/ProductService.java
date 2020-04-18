@@ -19,6 +19,9 @@ import com.tothenew.bootcamp.repositories.ProductVariationRepository;
 import com.tothenew.bootcamp.repositories.SellerRepository;
 import javafx.scene.chart.CategoryAxis;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Service;
 
@@ -204,7 +207,6 @@ public class ProductService {
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
         ProductVariation productVariation = productVariationRepository.findById(productVariationId).get();
-
         if (productVariation.getProduct().getSeller_seller().getId()!=seller.getId()){
             throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
                     ,Arrays.asList("You are not owner of provided product variation ID"));
@@ -222,20 +224,59 @@ public class ProductService {
 
 
     //------------------------------------------------------------------------------------------------------->
-    public CommonResponseVO viewAllProductsOfSeller(String token){
+    public CommonResponseVO viewAllProductsOfSeller(String token,Integer max,Integer offset,String order
+            ,String sort, String query
+    ){
+
+
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
-        LinkedHashMap<String, ProductPojo> sellerProductsHashmap = new LinkedHashMap<>();
-        List<Product> sellerProducts = productRepository.findProductsWithSellerId(seller.getId());
-        int[] count = new int[]{0};
-        if (sellerProducts.isEmpty()){
-            throw new GiveMessageException(Arrays.asList(StatusCode.NOT_AVAILABLE.toString())
-                    ,Arrays.asList("No products are available by seller = "+username));
-        }else {
+        int maxNumberOfSellerProducts = productRepository.findProductsWithSellerId(seller.getId()).size();
 
+        int maxRecordsPerPage=maxNumberOfSellerProducts;
+        int pageOffset=0;
+        Sort.Direction direction= Sort.Direction.ASC;
+        String property="id";
+
+        LinkedHashMap<String, ProductPojo> sellerProductsHashmap = new LinkedHashMap<>();
+        List<Product> sellerProducts;
+        int[] count = new int[]{0};
+
+                if (offset!=null) {
+                    pageOffset = offset.intValue();
+                }
+                if (max!=null) {
+                    maxRecordsPerPage = max.intValue();
+                    }
+
+                if (sort!=null) {
+                    if (sort.toLowerCase().equals("asc")) {
+                        direction = Sort.Direction.ASC;
+                    } else if (sort.toLowerCase().equals("desc")) {
+                        direction = Sort.Direction.DESC;
+                    } else {
+                        throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
+                    }
+                }
+
+                if (query!=null){
+                    if (query.equals("name") || query.equals("categoryId") || query.equals("brand") || query.equals("id")){
+                    }else {
+                        throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid. ONLY (id,brand,categoryId,name) is eligible"));
+                    }
+                    property=query;
+                }
+
+                Pageable pageable = PageRequest.of(pageOffset,maxRecordsPerPage,direction,property);
+                sellerProducts = productRepository.findProductsWithSellerId(seller.getId(),pageable);
+                if (sellerProducts.isEmpty()){
+                    throw new GiveMessageException(Arrays.asList(StatusCode.NOT_AVAILABLE.toString())
+                    ,Arrays.asList("No products are available by seller = "+username));
+                }
 
             sellerProducts.forEach(product -> {
                 ProductPojo productPojo = new ProductPojo();
+                productPojo.setName(product.getName());
                 productPojo.setId(product.getId());
                 productPojo.setBrand(product.getBrand());
                 productPojo.setCategory_id(product.getCategory().getId());
@@ -255,11 +296,18 @@ tried to set dynamic filtering on entity..
 //                mappingJacksonValue.setFilters(filterProvider);
                 sellerProductsHashmap.put("product_"+count[0]++,productPojo);
             });
-        }
+
 
 
         CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
         commonResponseVO.setData(sellerProductsHashmap);
         return commonResponseVO;
     }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------>
+
 }

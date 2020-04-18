@@ -90,16 +90,17 @@ public class CategoryService {
          scenerio->
          nothing is provided but only property then exception
          */
-        int maxRecordsPerPage;
+        int totalSize = categoryMetadataFieldRepository.findAll().size();
+        int maxRecordsPerPage =totalSize;
         int pageOffset=0;
         Direction direction=Direction.ASC;
         String property="id";
-
-        if (max!=null){
             if (offset!=null) {
                 pageOffset = offset.intValue();
             }
-                maxRecordsPerPage=max.intValue();
+            if (max!=null) {
+                maxRecordsPerPage = max.intValue();
+            }
 
                 if (sort!=null) {
                     if (sort.toLowerCase().equals("asc")) {
@@ -113,47 +114,17 @@ public class CategoryService {
 
 
                 if (query!=null){
-                    if (query!="category_key" || query!="id"){
-                        throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
+                    if (query.equals("category_key")|| query.equals("id") ){
+
                     }
+                    else{
+                        throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid. ONLY (category_key,id) is eligible"));
+                    }
+
                     property=query;
                 }
                 Pageable pageable = PageRequest.of(pageOffset,maxRecordsPerPage,direction,property);
                 categoryMetadataFields=categoryMetadataFieldRepository.findAll(pageable);
-
-        }
-        else if (sort!=null){
-
-
-                if (sort.toLowerCase().equals("asc")) {
-                    direction = Direction.ASC;
-                } else if (sort.toLowerCase().equals("desc")) {
-                    direction = Direction.DESC;
-                } else {
-                    throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
-                }
-
-            if (query!=null){
-                if (query!="category_key"){
-                    throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
-                }
-                property=query;
-            }
-
-            categoryMetadataFields= categoryMetadataFieldRepository.findAllOrderBy(direction.toString(),property);
-
-        }
-        else if (query!=null){
-           if (query!="category_key"){
-               throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
-           }
-
-            categoryMetadataFields=categoryMetadataFieldRepository.findAllOrderBy(direction.toString(),query);
-        }
-        else {
-            categoryMetadataFields=categoryMetadataFieldRepository.findAll();
-        }
-
         int[] count = new int[]{0};
         CommonResponseVO<LinkedHashMap<String, CategoryMetadataField>> commonResponseVO = new CommonResponseVO<LinkedHashMap<String, CategoryMetadataField>>();
         LinkedHashMap<String, CategoryMetadataField> hashMap = new LinkedHashMap<>();
@@ -230,38 +201,7 @@ public class CategoryService {
                 }catch (NullPointerException e){
                 }
             });
-
-            fetchedParentCategoryId=parentId.intValue();
-//            while (true) {
-//                try {
-//
-//                    Iterable<Category> parentCategories = categoryRespository.findByParentId(fetchedParentCategoryId);
-//                    parentCategories.forEach(parentCategory -> {
-//
-//                        if (parentCategory.getName().equals(newCategoryName)) {
-//                            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
-//                                    Arrays.asList("Category name already EXIST in the ^ Tree"));
-//
-//                        }
-//                    });
-//                }catch (NullPointerException e){
-//                }
-//                try {
-//                    Category category = categoryRespository.findById(fetchedParentCategoryId).get();
-//                    fetchedParentCategoryId = category.getParentCategory().getId();
-//
-//                }catch (NullPointerException ee){
-//                    Category ToppestCategory = categoryRespository.findById(fetchedParentCategoryId).get();
-//
-//                    if (ToppestCategory.getName().equals(newCategoryName)){
-//                        throw new GiveMessageException(Arrays.asList( StatusCode.FAILED.toString()),Arrays.asList("Category name already EXIST in the ^ Tree"));
-//                    }
-//                    System.out.println("No more parent Exist futher"); StatusCode.FAILED.toString();
-//                    break;
-//                }
-//
-//            }
-            checkCategoryNameEistUpInTree(parentId,newCategoryName);
+            checkCategoryNameExistUpInTree(parentId,newCategoryName);
 
             fetchedParentCategoryId=parentId.intValue();
                 Category parentCategory = categoryRespository.findById(fetchedParentCategoryId).get();
@@ -285,7 +225,7 @@ public class CategoryService {
     }
 
 
-    public void checkCategoryNameEistUpInTree(int parent_id,String newCategoryName){
+    public void checkCategoryNameExistUpInTree(int parent_id,String newCategoryName){
         int fetchedParentCategoryId=parent_id;
         while (true) {
             try {
@@ -423,17 +363,18 @@ public class CategoryService {
     {
         int[] count = new int[]{0};
         LinkedHashMap<String, Category> categoriesHashmap = new LinkedHashMap<>();
-        Iterable<Category> allCategories = categoryRespository.findAll();
-        int maxRecordsPerPage;
+        Iterable<Category> allCategories;
+        int maxRecordsPerPage =categoryRespository.findAll().size();
         int pageOffset=0;
         Direction direction=Direction.ASC;
         String property="id";
 
-        if (max!=null){
             if (offset!=null) {
                 pageOffset = offset.intValue();
             }
-            maxRecordsPerPage=max.intValue();
+            if (max!=null) {
+                maxRecordsPerPage = max.intValue();
+            }
             if (sort!=null) {
                 if (sort.toLowerCase().equals("asc")) {
                     direction = Direction.ASC;
@@ -444,42 +385,17 @@ public class CategoryService {
                 }
             }
             if (query!=null){
-                if (query!="id" ||query!="parent_id" || query!="name"){
-                    throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
+                if (query.equals("id")||query.equals("parent_id") || query.equals("name")){
+                }
+                else{
+                    throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid. ONLY (id,parent_id,name) is eligible"));
                 }
                 property=query;
             }
             Pageable pageable = PageRequest.of(pageOffset,maxRecordsPerPage,direction,property);
             allCategories=categoryRespository.findAll(pageable);
 
-        }
-        else if (sort!=null){
-            if (sort.toLowerCase().equals("asc")) {
-                direction = Direction.ASC;
-            } else if (sort.toLowerCase().equals("desc")) {
-                direction = Direction.DESC;
-            } else {
-                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
-            }
 
-            if (query!=null){
-                if (query!="id" ||query!="parent_id" || query!="name"){
-                    throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
-                }
-                property=query;
-            }
-            allCategories= categoryRespository.findAllOrderBy(property,direction.toString());
-        }
-        else if (query!=null){
-            if (query!="id" ||query!="parent_id" || query!="name"){
-                throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid"));
-            }
-
-            allCategories=categoryRespository.findAllOrderBy(direction.toString(),query);
-        }
-        else {
-            allCategories=categoryRespository.findAll();
-        }
         allCategories.forEach(category -> {
             category.setParentCategory(null);
             category. setProductSet(null);
@@ -507,7 +423,7 @@ public class CategoryService {
     public CommonResponseVO updateCategoryByAdmin(int categoryId,String newCategoryName){
         int fetchedParentCategoryId;
         fetchedParentCategoryId=categoryId;
-        checkCategoryNameEistUpInTree(categoryId,newCategoryName);
+        checkCategoryNameExistUpInTree(categoryId,newCategoryName);
         checkCategoryNameExistDownInTree(categoryId,newCategoryName);
         Category updatedCategory= categoryRespository.findById(categoryId).get();
         updatedCategory.setName(newCategoryName);

@@ -88,10 +88,15 @@ public class Product {
 
     //---------------------------------------------------------------------------------------------------------->
     @GetMapping("/user/seller/products")
-    public ResponseEntity viewAllProductBySeller(@RequestHeader(value = "Authorization") String tokenString)
+    public ResponseEntity viewAllProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                 @RequestParam(value = "max",required = false) Integer max,
+                                                 @RequestParam(value = "offset",required = false) Integer offset,
+                                                 @RequestParam(value = "order",required = false) String order,
+                                                 @RequestParam(value = "sort",required = false) String sort,
+                                                 @RequestParam(value = "query",required = false) String query)
     {
         String token = tokenString.split(" ")[1];
-        CommonResponseVO commonResponseVO = productService.viewAllProductsOfSeller(token);
+        CommonResponseVO commonResponseVO = productService.viewAllProductsOfSeller(token,max,offset, order, sort, query);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
 }

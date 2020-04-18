@@ -16,6 +16,8 @@ public interface CategoryRespository extends CrudRepository<Category,Integer> {
 
     Iterable<Category> findAll(Pageable pageable);
 
+    List<Category> findAll();
+
     @Query(value = "select * from category order by :query :order",nativeQuery = true)
     Iterable<Category> findAllOrderBy(String query,String order);
 
