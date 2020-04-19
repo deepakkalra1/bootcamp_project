@@ -231,4 +231,45 @@ public class Product {
                 .getSimilarProductsByCustomer(productId,max,offset, order, sort, query);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
+
+
+
+
+
+
+    //-------------------------------->Admin Product Api
+    ///------------------------------------------------------------------------------------------------------>
+    @GetMapping("/user/admin/product")
+    public ResponseEntity getProductByAdmin(@RequestParam(value = "productId")int productId)
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductByCustomer(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/admin/products")
+    public ResponseEntity getProductsByAdmin(
+            @RequestParam(value = "max",required = false) Integer max,
+            @RequestParam(value = "offset",required = false) Integer offset,
+            @RequestParam(value = "order",required = false) String order,
+            @RequestParam(value = "sort",required = false) String sort,
+            @RequestParam(value = "query",required = false) String query
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductsByCustomer(max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+
 }
