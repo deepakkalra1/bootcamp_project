@@ -195,7 +195,8 @@ public class Product {
 
 
 
-    @GetMapping("/user/customer/product")
+    //-------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/customer/products")
     public ResponseEntity getProductsByCustomer(
             @RequestParam(value = "max",required = false) Integer max,
             @RequestParam(value = "offset",required = false) Integer offset,
@@ -206,6 +207,28 @@ public class Product {
     {
         CommonResponseVO commonResponseVO = productService
                 .getProductsByCustomer(max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/customer/similar/products")
+    public ResponseEntity getSimilarProductsByCustomer(
+            @RequestParam(value = "productId") int productId,
+            @RequestParam(value = "max",required = false) Integer max,
+            @RequestParam(value = "offset",required = false) Integer offset,
+            @RequestParam(value = "order",required = false) String order,
+            @RequestParam(value = "sort",required = false) String sort,
+            @RequestParam(value = "query",required = false) String query
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getSimilarProductsByCustomer(productId,max,offset, order, sort, query);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
 }

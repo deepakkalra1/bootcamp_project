@@ -553,22 +553,107 @@ tried to set dynamic filtering on entity..
 
         }else {
             products.forEach(product -> {
-                ProductPojo productPojo = new ProductPojo();
-                productPojo.setName(product.getName());
-                productPojo.setId(product.getId());
-                productPojo.setBrand(product.getBrand());
-                productPojo.setCategory_id(product.getCategory().getId());
-                productPojo.setDescription(product.getDescription());
-                productPojo.setIs_active(product.isIs_active());
-                productPojo.setIs_cancellable(product.isIs_cancellable());
-                productPojo.setIs_returnable(product.isIs_returnable());
-                productPojo.setSeller_id(product.getSeller_seller().getId());
-                productPojo.setCategory_name(product.getCategory().getName());
-                
-                productPojoLinkedHashMap.put("product_"+count[0]++,productPojo);
+                try {
+
+
+                    if (product.getProductVariationlist().isEmpty()) {
+                        throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString()));
+                    }
+                    ProductPojo productPojo = new ProductPojo();
+                    productPojo.setName(product.getName());
+                    productPojo.setId(product.getId());
+                    productPojo.setBrand(product.getBrand());
+                    productPojo.setCategory_id(product.getCategory().getId());
+                    productPojo.setDescription(product.getDescription());
+                    productPojo.setIs_active(product.isIs_active());
+                    productPojo.setIs_cancellable(product.isIs_cancellable());
+                    productPojo.setIs_returnable(product.isIs_returnable());
+                    productPojo.setSeller_id(product.getSeller_seller().getId());
+                    productPojo.setCategory_name(product.getCategory().getName());
+
+                    productPojoLinkedHashMap.put("product_" + count[0]++, productPojo);
+                }
+                catch (GiveMessageException e){
+                    //do nothing..
+                    //this enables me to pass this loop bcoz there is no continue and break in forEach
+                }
             });
 
         }
+        CommonResponseVO<LinkedHashMap> commonResponseVO =
+                new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(productPojoLinkedHashMap);
+        return commonResponseVO;
+    }
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------->
+    public CommonResponseVO getSimilarProductsByCustomer
+    (int productId,Integer max,Integer offset,String order,String sort,String query)
+    {
+        LinkedHashMap<String, ProductPojo> productPojoLinkedHashMap =  new LinkedHashMap<>();
+        int categoryId = productRepository.findById(productId).get().getCategory().getId();
+        int maxRecordsPerPage= productRepository.findTotalNumberOfProductUnderCategory
+                (categoryId).intValue();
+        int pageOffset=0;
+        Sort.Direction direction= Sort.Direction.ASC;
+        String property="id";
+
+
+
+        if (offset!=null) {
+            pageOffset = offset.intValue();
+        }
+        if (max!=null) {
+            maxRecordsPerPage = max.intValue();
+        }
+
+        if (sort!=null) {
+            if (sort.toLowerCase().equals("asc")) {
+                direction = Sort.Direction.ASC;
+            } else if (sort.toLowerCase().equals("desc")) {
+                direction = Sort.Direction.DESC;
+            } else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
+            }
+        }
+
+        if (query!=null){
+            if (query.equals("name") || query.equals("categoryId") || query.equals("brand") || query.equals("id")){
+            }else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid. ONLY (id,brand,categoryId,name) is eligible"));
+            }
+            property=query;
+        }
+        Pageable pageable = PageRequest.of(pageOffset,maxRecordsPerPage,direction,property);
+        List<Product> products = productRepository.findByCategoryId(categoryId,pageable);
+        int count[] = new int[]{0};
+        products.forEach(product -> {
+            try {
+                if (product.getProductVariationlist().isEmpty()){
+                    throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString()));
+                }else {
+                    ProductPojo productPojo = new ProductPojo();
+                    productPojo.setName(product.getName());
+                    productPojo.setId(product.getId());
+                    productPojo.setBrand(product.getBrand());
+                    productPojo.setCategory_id(product.getCategory().getId());
+                    productPojo.setDescription(product.getDescription());
+                    productPojo.setIs_active(product.isIs_active());
+                    productPojo.setIs_cancellable(product.isIs_cancellable());
+                    productPojo.setIs_returnable(product.isIs_returnable());
+                    productPojo.setSeller_id(product.getSeller_seller().getId());
+                    productPojo.setCategory_name(product.getCategory().getName());
+
+                    productPojoLinkedHashMap.put("product_" + count[0]++, productPojo);
+                }
+            }
+            catch (GiveMessageException e){}
+
+        });
         CommonResponseVO<LinkedHashMap> commonResponseVO =
                 new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
         commonResponseVO.setData(productPojoLinkedHashMap);

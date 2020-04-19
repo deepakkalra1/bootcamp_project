@@ -128,6 +128,8 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
 
                 .antMatchers("/user/customer/view/categories").anonymous()
                 .antMatchers("/user/customer/view/category/filters").anonymous()
+                .antMatchers("/user/customer/product").anonymous()
+                .antMatchers("/user/customer/products").anonymous()
 
                 .antMatchers("/doLogout").hasAnyRole("ADMIN", "CUSTOMER", "SELLER")
                 .anyRequest().authenticated()
