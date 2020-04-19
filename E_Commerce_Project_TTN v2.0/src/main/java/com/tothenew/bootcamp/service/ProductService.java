@@ -52,14 +52,14 @@ public class ProductService {
     //----------------------------------------------------------------------------------------------------------->
     public CommonResponseVO addProductBySeller(String token,String productName, int cayegoryId, String brandName,String description,
                                                Boolean is_cancelable, Boolean is_returnable){
-        System.out.println("0");
+
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
-        System.out.println("1");
+
        List<Product> anyExistingProductOfSellerWithSameNameInSameCategory= productRepository.findProductsWithSellerIdAndProductNameAndCategoryId(seller.getId(),productName,cayegoryId);
-        System.out.println("2");
+
        if (anyExistingProductOfSellerWithSameNameInSameCategory.isEmpty()){
-           System.out.println("3");
+
             Product product = new Product();
             product.setName(productName);
 
@@ -400,6 +400,178 @@ tried to set dynamic filtering on entity..
         productRepository.delete(product);
 
         CommonResponseVO<LinkedHashMap> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return commonResponseVO;
+    }
+
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------>
+    public CommonResponseVO updateProductBySeller
+    (String token,int productId,String name,String description,Boolean is_cancelable,Boolean is_returnable)
+    {
+        String username = JwtUtility.findUsernameFromToken(token);
+        Seller seller = sellerRepository.findByEmail(username);
+
+        Product product = productRepository.findById(productId).get();
+        if (product.getSeller_seller().getId()!=seller.getId()){
+            throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
+                    ,Arrays.asList("Provided product id does not belongs to you ~"+username));
+        }
+        if (description!=null){
+            product.setDescription(description);
+        }
+        if (is_cancelable!=null){
+            product.setIs_cancellable(is_cancelable.booleanValue());
+        }
+        if (is_returnable!=null){
+            product.setIs_returnable(is_returnable.booleanValue());
+        }
+        if (name!=null){
+
+            List<Product> anyExistingProductOfSellerWithSameNameInSameCategory=
+                    productRepository.findProductsWithSellerIdAndProductNameAndCategoryId
+                            (seller.getId(),product.getName(),product.getCategory().getId());
+            if (anyExistingProductOfSellerWithSameNameInSameCategory.isEmpty()==false){
+                throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
+                        ,Arrays.asList("This product name is already taken under this category by seller= "+username));
+            }
+            product.setName(name);
+        }
+        productRepository.save(product);
+            CommonResponseVO<LinkedHashMap> commonResponseVO =
+                    new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return commonResponseVO;
+    }
+
+
+
+
+
+    //--------------------------------------------------------------------------------------------------->
+    public CommonResponseVO updateProductVariationBySeller
+    (String token,int productVariationId,Integer quantity,Integer price,Boolean is_active,String primaryImage,LinkedHashMap<String, String> metadata)
+    {
+        String username = JwtUtility.findUsernameFromToken(token);
+        Seller seller = sellerRepository.findByEmail(username);
+
+        ProductVariation productVariation=productVariationRepository.findById(productVariationId).get();
+        if (seller.getId()!=productVariation.getProduct().getSeller_seller().getId()){
+            throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
+                    ,Arrays.asList("Provided product variation id does not belongs to you ~"+username));
+        }
+        if (quantity!=null){
+            productVariation.setQuantity_available(quantity.intValue());
+        }
+        if (price!=null){
+            productVariation.setPrice(price.intValue());
+        }
+        if (is_active!=null){
+            productVariation.setIs_active(is_active.booleanValue());
+        }
+        if (primaryImage!=null){
+            productVariation.setPrimary_image(primaryImage);
+        }
+        if (metadata.isEmpty()==false){
+            productVariation.setMetadataHashmap(metadata);
+        }
+        productVariationRepository.save(productVariation);
+
+        CommonResponseVO commonResponseVO =
+                new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return commonResponseVO;
+
+    }
+
+
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------->
+    public CommonResponseVO getProductByCustomer(int productId){
+        Product product = productRepository.findById(productId).get();
+        if (product.getProductVariationlist().isEmpty()){
+            throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
+                    ,Arrays.asList("Product does not hold any variation yet so not eligible for display"));
+        }
+
+        CommonResponseVO<Product> commonResponseVO =
+                new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(product);
+        return commonResponseVO;
+    }
+
+
+
+
+
+
+    //------------------------------------------------------------------------------------------------------>
+    public CommonResponseVO getProductsByCustomer
+    (Integer max,Integer offset,String order,String sort,String query)
+    {
+        int maxRecordsPerPage= productRepository.findTotalNumberOfProduct().intValue();
+        int pageOffset=0;
+        Sort.Direction direction= Sort.Direction.ASC;
+        String property="id";
+
+
+        if (offset!=null) {
+            pageOffset = offset.intValue();
+        }
+        if (max!=null) {
+            maxRecordsPerPage = max.intValue();
+        }
+
+        if (sort!=null) {
+            if (sort.toLowerCase().equals("asc")) {
+                direction = Sort.Direction.ASC;
+            } else if (sort.toLowerCase().equals("desc")) {
+                direction = Sort.Direction.DESC;
+            } else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()), Arrays.asList("sorting order can be either asc or desc only"));
+            }
+        }
+
+        if (query!=null){
+            if (query.equals("name") || query.equals("categoryId") || query.equals("brand") || query.equals("id")){
+            }else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.INVALID.toString()),Arrays.asList("Property name provided was invalid. ONLY (id,brand,categoryId,name) is eligible"));
+            }
+            property=query;
+        }
+        Pageable pageable = PageRequest.of(pageOffset,maxRecordsPerPage,direction,property);
+        List<Product> products = productRepository.findAll(pageable);
+        LinkedHashMap<String, ProductPojo> productPojoLinkedHashMap = new LinkedHashMap<>();
+        int[] count = new int[]{0};
+        if (products.isEmpty()){
+            throw new GiveMessageException(Arrays.asList(StatusCode.NOT_AVAILABLE.toString()),Arrays.asList("No Product available"));
+
+        }else {
+            products.forEach(product -> {
+                ProductPojo productPojo = new ProductPojo();
+                productPojo.setName(product.getName());
+                productPojo.setId(product.getId());
+                productPojo.setBrand(product.getBrand());
+                productPojo.setCategory_id(product.getCategory().getId());
+                productPojo.setDescription(product.getDescription());
+                productPojo.setIs_active(product.isIs_active());
+                productPojo.setIs_cancellable(product.isIs_cancellable());
+                productPojo.setIs_returnable(product.isIs_returnable());
+                productPojo.setSeller_id(product.getSeller_seller().getId());
+                productPojo.setCategory_name(product.getCategory().getName());
+                
+                productPojoLinkedHashMap.put("product_"+count[0]++,productPojo);
+            });
+
+        }
+        CommonResponseVO<LinkedHashMap> commonResponseVO =
+                new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(productPojoLinkedHashMap);
         return commonResponseVO;
     }
 }

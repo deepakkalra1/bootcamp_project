@@ -133,4 +133,79 @@ public class Product {
         CommonResponseVO commonResponseVO = productService.deleteProductBySeller(token,productId);
         return new ResponseEntity(commonResponseVO,HttpStatus.OK);
     }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/seller/product/update")
+    public ResponseEntity updateProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                @RequestParam(value = "productId")int productId,
+                                                @RequestParam(value = "name",required = false)String name,
+                                                @RequestParam(value = "description",required = false)String description,
+                                                @RequestParam(value = "is_cancelable",required = false)Boolean is_cancelable,
+                                                @RequestParam(value = "is_returnable",required = false)Boolean is_returnable
+    )
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService
+                .updateProductBySeller(token,productId,name,description,is_cancelable,is_returnable);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+    @PutMapping("/user/seller/product/variation/update")
+    public ResponseEntity updateProductVariationBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                @RequestParam(value = "productVariationId")int productVariationId,
+                                                @RequestParam(value = "quantity",required = false)Integer quantity,
+                                                @RequestParam(value = "price",required = false)Integer price,
+                                                @RequestParam(value = "is_active",required = false)Boolean is_active,
+                                                @RequestParam(value = "primaryImage",required = false)String primaryImage,
+                                                         @RequestBody LinkedHashMap metadata
+    )
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService
+                .updateProductVariationBySeller(token,productVariationId,quantity,price,is_active,primaryImage,metadata);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+
+    //-------------------------------->Customer Product Api
+    ///------------------------------------------------------------------------------------------------------>
+    @GetMapping("/user/customer/product")
+    public ResponseEntity getProductByCustomer(@RequestParam(value = "productId")int productId)
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductByCustomer(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    @GetMapping("/user/customer/product")
+    public ResponseEntity getProductsByCustomer(
+            @RequestParam(value = "max",required = false) Integer max,
+            @RequestParam(value = "offset",required = false) Integer offset,
+            @RequestParam(value = "order",required = false) String order,
+            @RequestParam(value = "sort",required = false) String sort,
+            @RequestParam(value = "query",required = false) String query
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductsByCustomer(max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
 }

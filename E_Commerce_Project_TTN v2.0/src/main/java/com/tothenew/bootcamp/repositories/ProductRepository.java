@@ -22,5 +22,9 @@ public interface ProductRepository extends CrudRepository<Product, Integer> {
     @Query(value = "select * from product where seller_user_id=:id order by :property :direction",nativeQuery = true)
     LinkedList<Product> findProductsWithSellerIdAndOrderByAndWithProperty(int id, String property, String direction);
 
-  //  void deleteByProductId()
+    @Query(value = "select COUNT(id) from product ",nativeQuery = true)
+    Integer findTotalNumberOfProduct();
+
+    List<Product> findAll(Pageable pageable);
+
 }
