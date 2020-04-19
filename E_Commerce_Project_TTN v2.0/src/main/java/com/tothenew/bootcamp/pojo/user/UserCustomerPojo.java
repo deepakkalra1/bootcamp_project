@@ -17,6 +17,7 @@ public class UserCustomerPojo {
     private boolean is_active;
     private List<AddressPojo> addressList;
     private String image;
+    private Byte[] imageBytes;
 
 
     //------------------------------------------------------------------------------------------------------------->
@@ -152,5 +153,13 @@ public class UserCustomerPojo {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public Byte[] getImageBytes() {
+        return imageBytes;
+    }
+
+    public void setImageBytes(Byte[] imageBytes) {
+        this.imageBytes = imageBytes;
     }
 }

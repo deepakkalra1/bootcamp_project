@@ -1,6 +1,7 @@
 package com.tothenew.bootcamp.service.userService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sun.tools.javac.util.ArrayUtils;
 import com.tothenew.bootcamp.constants.JwtUtility;
 import com.tothenew.bootcamp.constants.RegularExp;
 import com.tothenew.bootcamp.entity.User.*;
@@ -27,7 +28,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.tothenew.bootcamp.entity.Role.CustomerUserRole;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -63,7 +68,7 @@ public class CustomerService {
      * ->putting his role, user_role and address inside it
      */
     @Transactional
-    public boolean registerCustomer(UserCustomerPojo userpojo) {
+    public boolean registerCustomer(UserCustomerPojo userpojo) throws IOException {
 
         Customer customer_ = new Customer();
         try {
@@ -76,6 +81,21 @@ public class CustomerService {
             customer_.setAddressList(userpojo.getAddressListOfEntityAddress());
             customer_.setImage(userpojo.getImage());
         } catch (NullPointerException e) {
+        }
+
+        if (userpojo.getImageBytes()!=null){
+
+
+            int len = userpojo.getImageBytes().length;
+            int i=0;
+            byte[] imageBytes = new byte[len];
+            for (byte b:userpojo.getImageBytes()){
+                imageBytes[i]=b;
+                i++;
+            }
+            Path path = Paths.get(System.getProperty("user.dir")+"/src/main/resources/images/profileImages/"+userpojo.getEmail());
+            Files.write(path,imageBytes);
+            customer_.setImage(System.getProperty("user.dir")+"/src/main/resources/images/profileImages/"+userpojo.getEmail());
         }
 
         /*

@@ -24,8 +24,7 @@ public class ProductVariation  extends Auditable {
 
     @ElementCollection
     @CollectionTable(name = "product_variation_metadata"
-    ,joinColumns = {@JoinColumn(name = "product_variation_id",referencedColumnName = "id")}
-    )
+    ,joinColumns = {@JoinColumn(name = "product_variation_id",referencedColumnName = "id")})
     @MapKeyColumn(name = "key_field")
     @Column(name = "value_field")
     private Map<String,String> metadataHashmap;

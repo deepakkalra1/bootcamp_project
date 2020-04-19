@@ -19,6 +19,7 @@ public class UserSellerPojo {
     private List<AddressPojo> addressList;
     private SellerOrganizationDetailsPojo sellerOrganizationDetailsPojo;
     private String image;
+    private Byte[] imageBytes;
 
     //------------------------------------------------------------------------------------------------------------->
 
@@ -145,5 +146,13 @@ public class UserSellerPojo {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public Byte[] getImageBytes() {
+        return imageBytes;
+    }
+
+    public void setImageBytes(Byte[] imageBytes) {
+        this.imageBytes = imageBytes;
     }
 }

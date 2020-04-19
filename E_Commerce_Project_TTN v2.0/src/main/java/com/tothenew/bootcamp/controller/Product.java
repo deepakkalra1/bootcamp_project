@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
@@ -42,11 +44,11 @@ public class Product {
     @PostMapping("/user/seller/product-variation/add")
     public ResponseEntity addProductVariation(@RequestHeader(value = "Authorization") String tokenString,
                                               @RequestParam(value = "productId")int productId,
-                                              @RequestParam(value = "primaryImage") String primaryImage,
+                                              @RequestParam(value = "primaryImage",required = false) MultipartFile primaryImage,
                                               @RequestBody LinkedHashMap<String, String> metadata,
                                               @RequestParam(value = "quantity",required = false)Integer quantity,
                                               @RequestParam(value = "price",required = false)Integer price
-                                              ){
+                                              ) throws IOException {
         String token = tokenString.split(" ")[1];
         productService.addProductVariationForProduct(token,productId,primaryImage,metadata,quantity,price);
         CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));

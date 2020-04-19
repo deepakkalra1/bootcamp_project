@@ -2,6 +2,7 @@ package com.tothenew.bootcamp.controller;
 
 import com.tothenew.bootcamp.enums.StatusCode;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
+import com.tothenew.bootcamp.pojo.user.UserCustomerPojo;
 import com.tothenew.bootcamp.service.ActivationService;
 import com.tothenew.bootcamp.configurations.email.EmailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 @RestController
@@ -27,6 +37,8 @@ public class Activation {
     @Autowired
     EmailServiceImpl emailService;
     //--------------------------------------------------------------------------------------------------------------->
+
+
     @GetMapping("/")
     public String homePage() {
         return "Welcome to deepak kalra's E-Commerce application"; }

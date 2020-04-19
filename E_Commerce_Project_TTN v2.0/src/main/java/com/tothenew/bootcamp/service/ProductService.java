@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.tothenew.bootcamp.constants.JwtUtility;
 import com.tothenew.bootcamp.entity.ProductContent.Category;
+import com.tothenew.bootcamp.entity.ProductContent.CategoryMetadataValue;
 import com.tothenew.bootcamp.entity.ProductContent.Product;
 import com.tothenew.bootcamp.entity.ProductContent.ProductVariation;
 import com.tothenew.bootcamp.entity.User.Seller;
@@ -14,10 +15,7 @@ import com.tothenew.bootcamp.exceptionHandling.GiveMessageException;
 import com.tothenew.bootcamp.pojo.CommonResponseVO;
 import com.tothenew.bootcamp.pojo.ProductPojo;
 import com.tothenew.bootcamp.pojo.ProductVariationPojo;
-import com.tothenew.bootcamp.repositories.CategoryRespository;
-import com.tothenew.bootcamp.repositories.ProductRepository;
-import com.tothenew.bootcamp.repositories.ProductVariationRepository;
-import com.tothenew.bootcamp.repositories.SellerRepository;
+import com.tothenew.bootcamp.repositories.*;
 import javafx.scene.chart.CategoryAxis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -26,11 +24,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class ProductService {
@@ -46,6 +48,9 @@ public class ProductService {
 
     @Autowired
     ProductVariationRepository productVariationRepository;
+
+    @Autowired
+    CategoryMetadataValueRepository categoryMetadataValueRepository;
 
 
 
@@ -117,15 +122,16 @@ public class ProductService {
 
 
     //------------------------------------------------------------------------------------------------------->
-    public void addProductVariationForProduct(String token,int productId,String primaryImage, LinkedHashMap<String, String>metadata
-                                                                            ,Integer quantity,Integer price
-    ){
+    public void addProductVariationForProduct
+    (String token, int productId, MultipartFile primaryImage, LinkedHashMap<String, String>metadata
+            , Integer quantity, Integer price
+    ) throws IOException {
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
         ProductVariation productVariation = new ProductVariation();
         //since it returns optional.. so if not found.. will throw noSuchElementException
         Product product = productRepository.findById(productId).get();
-
+        System.out.println("test");
         int quantityOfProductVariation=0;
         if (quantity!=null){
             quantityOfProductVariation=quantity.intValue();
@@ -146,11 +152,72 @@ public class ProductService {
                     ,Arrays.asList("Provided Product is not Active"));
 
         }
+        if(primaryImage!=null){
+            int randomImageNumber = (int) Math.random();
+            byte[] primaryImageBytes = primaryImage.getBytes();
+            String[] imageNameArr=primaryImage.getOriginalFilename().split(".");
+
+            if (imageNameArr[imageNameArr.length-1]!="jpg"){
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+                        Arrays.asList("Jpg image can be uploaded only"));
+            }
+            Path path = Paths.get(System.getProperty("user.dir")+"/src/main/resources/images/productVariationImages/"+randomImageNumber+".jpg");
+            Files.write(path,primaryImageBytes);
+            productVariation.setPrimary_image(System.getProperty("user.dir")+"/src/main/resources/images/profileImages/"+randomImageNumber+".jpg");
+        }
+//        List<CategoryMetadataValue> categoryMetadataValuesFromProduct= productRepository.findById(productId).get().getCategory().getCategoryMetadataValues();
+//        int[] lengthOfCategoryMDVfromProduct =new int[] {categoryMetadataValuesFromProduct.size()};
+//        if (categoryMetadataValuesFromProduct.isEmpty()){
+//            lengthOfCategoryMDVfromProduct[0]=0;
+//        }
+//        else {
+//            lengthOfCategoryMDVfromProduct[0]=categoryMetadataValuesFromProduct.size();
+//        }
+
+        List<CategoryMetadataValue> categoryMetadataValuesByCategoryId = categoryMetadataValueRepository.findByCategoryId(product.getCategory().getId());
+        if (categoryMetadataValuesByCategoryId.isEmpty()){
+            throw new GiveMessageException(Arrays.asList("No fields are present for this category"));
+        }
+//        List<Integer> listOfFieldsIdForProduct=new ArrayList<>();
+//        List<String> listOfFieldsNameForProduct=new ArrayList<>();
+//
+//        categoryMetadataValuesByCategoryId.forEach(categoryMetadataValue -> {
+//
+//        });
+        HashMap<String, String> finalMetadata = new HashMap<>();
+            int sizeOfMDVfromCategory=categoryMetadataValuesByCategoryId.size();
+            int[] checkIfFound= new int[]{-1};
+        System.out.println("test");
+        metadata.forEach((k,v)->{
+                if (Pattern.matches("addField_[0-9]$",k)){
+                        //to check if already registered
+//                    for (int i=0;i<lengthOfCategoryMDVfromProduct[0];i++){
+//                        if (v.equals(categoryMetadataValuesFromProduct.get(i).getCategoryMetadataField().getCategoryKey())){
+//                            throw new GiveMessageException(Arrays.asList("Provided field already exist"));
+//                        }
+//                    }
+                    checkIfFound[0]=0;
+                    for (int i=0;i<sizeOfMDVfromCategory;i++){
+                        System.out.println(categoryMetadataValuesByCategoryId.get(i).getCategoryMetadataField().getCategoryKey());
+                        if (v.equals(categoryMetadataValuesByCategoryId.get(i).getCategoryMetadataField().getCategoryKey())){
+                         finalMetadata.put(v,categoryMetadataValuesByCategoryId.get(i).getCategoryValue());
+                        checkIfFound[0]=-1;
+                         continue;
+                        }
+                    }
+                    if (checkIfFound[0]==0){
+                        throw new GiveMessageException(Arrays.asList("Provided Field Does not belong to this category product"));
+                    }
+
+                }else {
+                    throw new GiveMessageException(Arrays.asList("To add a field to product variation metadata,JSON key name should begin with addField_[0-9]"));
+                }
+        });
+        System.out.println("test");
         //putting all values
-        productVariation.setMetadataHashmap(metadata);
+        productVariation.setMetadataHashmap(finalMetadata);
         productVariation.setPrice(priceOfProductVariation);
         productVariation.setQuantity_available(quantityOfProductVariation);
-        productVariation.setPrimary_image(primaryImage);
         productVariation.setProduct(product);
         productVariationRepository.save(productVariation);
     }
@@ -215,8 +282,17 @@ public class ProductService {
                     ,Arrays.asList("You are not owner of provided product variation ID"));
         }
         productVariation.setProduct(null);
-        CommonResponseVO<ProductVariation> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
-        commonResponseVO.setData(productVariation);
+        ProductVariationPojo productVariationPojo = new ProductVariationPojo();
+        productVariationPojo.setId(productVariation.getId());
+        productVariationPojo.setProduct_id(productVariation.getProduct().getId());
+        productVariationPojo.setQuantity_available(productVariation.getQuantity_available());
+        productVariationPojo.setPrimary_image(productVariation.getPrimary_image());
+        productVariationPojo.setIs_active(productVariation.isIs_active());
+        productVariationPojo.setPrice(productVariation.getPrice());
+        productVariationPojo.setMetadataHashmap(productVariation.getMetadataHashmap());
+
+        CommonResponseVO<ProductVariationPojo> commonResponseVO = new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
+        commonResponseVO.setData(productVariationPojo);
         return commonResponseVO;
 
     }
@@ -494,14 +570,52 @@ tried to set dynamic filtering on entity..
     //---------------------------------------------------------------------------------------------------->
     public CommonResponseVO getProductByCustomer(int productId){
         Product product = productRepository.findById(productId).get();
+        LinkedHashMap<String,LinkedHashMap> productFinalContainer = new LinkedHashMap<>();
+        LinkedHashMap<String,ProductVariationPojo> productVariationContainer = new LinkedHashMap<>();
+        int[] count=new int[]{0};
         if (product.getProductVariationlist().isEmpty()){
-            throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
-                    ,Arrays.asList("Product does not hold any variation yet so not eligible for display"));
+        productFinalContainer.put("productVariation",productVariationContainer);
+
+      }else {
+            List<ProductVariation> productVariations = product.getProductVariationlist();
+            productVariations.forEach(productVariation -> {
+
+                ProductVariationPojo productVariationPojo = new ProductVariationPojo();
+                productVariationPojo.setId(productVariation.getId());
+                productVariationPojo.setIs_active(productVariation.isIs_active());
+                productVariationPojo.setMetadataHashmap(productVariation.getMetadataHashmap());
+                productVariationPojo.setPrice(productVariation.getPrice());
+                productVariationPojo.setPrimary_image(productVariation.getPrimary_image());
+                productVariationPojo.setProduct_id(productVariation.getProduct().getId());
+                productVariationPojo.setQuantity_available(productVariation.getQuantity_available());
+
+                productVariationContainer.put("productVariation_"+count[0]++,productVariationPojo);
+            });
         }
 
-        CommonResponseVO<Product> commonResponseVO =
+        LinkedHashMap<String,ProductPojo> productContainer = new LinkedHashMap<>();
+
+        ProductPojo productPojo = new ProductPojo();
+        productPojo.setName(product.getName());
+        productPojo.setId(product.getId());
+        productPojo.setBrand(product.getBrand());
+        productPojo.setCategory_id(product.getCategory().getId());
+        productPojo.setDescription(product.getDescription());
+        productPojo.setIs_active(product.isIs_active());
+        productPojo.setIs_cancellable(product.isIs_cancellable());
+        productPojo.setIs_returnable(product.isIs_returnable());
+        productPojo.setSeller_id(product.getSeller_seller().getId());
+        productPojo.setCategory_name(product.getCategory().getName());
+
+        productContainer.put("product",productPojo);
+
+        productFinalContainer.put("product",productContainer);
+        productFinalContainer.put("productVariations",productVariationContainer);
+
+
+        CommonResponseVO<LinkedHashMap> commonResponseVO =
                 new CommonResponseVO<>(Arrays.asList(StatusCode.SUCCESS.toString()));
-        commonResponseVO.setData(product);
+        commonResponseVO.setData(productFinalContainer);
         return commonResponseVO;
     }
 

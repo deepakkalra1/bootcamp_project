@@ -133,6 +133,4 @@ public class User extends Auditable {
     public void setImage(String image) {
         this.image = image;
     }
-
-
 }

@@ -260,6 +260,9 @@ public class CategoryService {
 
 
 
+
+
+    //----------------------------------------------------------------------------------------------------->
     public void checkCategoryNameExistDownInTree(int id,String newCategoryName){
         Category category = categoryRespository.findById(id).get();
         Iterable<Category> categories = categoryRespository.findByParentId(category.getId());
@@ -414,6 +417,7 @@ public class CategoryService {
         commonResponseVO.setData(categoriesHashmap);
         return commonResponseVO;
     }
+
 
 
 
@@ -611,7 +615,7 @@ public class CategoryService {
         }
         catch (NullPointerException e){
             throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString())
-                    ,Arrays.asList("Either Key is not proved Or Does not match the required key"));
+                    ,Arrays.asList("Either Key is not provied Or Does not match the required key"));
         }
         catch (NumberFormatException number){
             throw new GiveMessageException(Arrays.asList(StatusCode.NOT_VALID_FORMAT.toString()),

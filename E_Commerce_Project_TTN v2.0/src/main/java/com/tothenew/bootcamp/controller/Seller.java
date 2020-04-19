@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public class Seller {
      *                }}}
      */
     @PostMapping("/register/seller")
-    public ResponseEntity SellerRegistration(@RequestBody UserSellerPojo user) {
+    public ResponseEntity SellerRegistration(@RequestBody UserSellerPojo user) throws IOException {
 
         boolean registered=false;
         registered= sellerService.registerSeller(user);

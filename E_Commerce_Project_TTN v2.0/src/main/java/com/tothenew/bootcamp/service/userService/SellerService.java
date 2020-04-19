@@ -24,11 +24,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Service
 public class SellerService {
-
     @Autowired
     SellerRepository sellerRepository;
 
@@ -70,7 +73,7 @@ public class SellerService {
      *                      }
      */
     @Transactional
-    public boolean registerSeller(UserSellerPojo userpojo){
+    public boolean registerSeller(UserSellerPojo userpojo) throws IOException {
         Seller seller =new Seller();
         try {
             seller.setFirst_name(userpojo.getFirst_name());
@@ -80,11 +83,13 @@ public class SellerService {
             seller.setPassword(userpojo.getPassword());
             seller.setImage(userpojo.getImage());
             seller.setMiddle_name(userpojo.getMiddle_name());
-//            if (userpojo.getAddressListOfEntityAddress().size()>1){
-//                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
-//                ,Arrays.asList("Seller can have only ONE address for its organization")
-//                );
-//            }
+
+            //limiting seller to have single address
+            if (userpojo.getAddressListOfEntityAddress().size()>1){
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString())
+                ,Arrays.asList("Seller can have only ONE address for its organization")
+                );
+            }
             userpojo.getAddressListOfEntityAddress().forEach(address -> {
                 address.setOrg_address(true);
             });
@@ -109,6 +114,18 @@ public class SellerService {
         //user_role <- role
         user_role.setRole(role);
 
+        if (userpojo.getImageBytes()!=null){
+            int len = userpojo.getImageBytes().length;
+            int i=0;
+            byte[] imageBytes = new byte[len];
+            for (byte b:userpojo.getImageBytes()){
+                imageBytes[i]=b;
+                i++;
+            }
+            Path path = Paths.get(System.getProperty("user.dir")+"/src/main/resources/images/profileImages/"+userpojo.getEmail());
+            Files.write(path,imageBytes);
+            seller.setImage(System.getProperty("user.dir")+"/src/main/resources/images/profileImages/"+userpojo.getEmail());
+        }
 
         try {
             String pass = seller.getPassword();

@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,7 +52,7 @@ public class Customer {
      *                }}}
      */
     @PostMapping("/register/customer")
-    public ResponseEntity CustomerRegistration(@RequestBody UserCustomerPojo user_)  {
+    public ResponseEntity CustomerRegistration(@RequestBody UserCustomerPojo user_) throws IOException {
         boolean newRegistered=false;
         newRegistered= customerService.registerCustomer(user_);
        if(newRegistered ){
