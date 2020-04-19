@@ -271,5 +271,29 @@ public class Product {
 
 
 
+    //-------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/admin/product/activate")
+    public ResponseEntity activateProductByAdmin(
+            @RequestParam(value = "productId") int productId
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .activateProductByAdmin(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
 
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/admin/product/deactivate")
+    public ResponseEntity deactivateProductByAdmin(
+            @RequestParam(value = "productId") int productId
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .deactivateProductByAdmin(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
 }

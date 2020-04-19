@@ -659,4 +659,43 @@ tried to set dynamic filtering on entity..
         commonResponseVO.setData(productPojoLinkedHashMap);
         return commonResponseVO;
     }
+
+
+
+
+
+
+    //--------------------------------------------------------------------------------------------------->
+    public CommonResponseVO activateProductByAdmin(int productId){
+            Product product = productRepository.findById(productId).get();
+            if (product.isIs_active()==false){
+                product.setIs_active(true);
+            }
+            else {
+                throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+                        Arrays.asList("Product Already Active"));
+            }
+        CommonResponseVO<LinkedHashMap> commonResponseVO =
+                new CommonResponseVO<>(Arrays.asList(StatusCode.PRODUCT_ACTIVATED.toString()));
+        return commonResponseVO;
+    }
+
+
+
+
+
+    //--------------------------------------------------------------------------------------------------->
+    public CommonResponseVO deactivateProductByAdmin(int productId){
+        Product product = productRepository.findById(productId).get();
+        if (product.isIs_active()==true){
+            product.setIs_active(false);
+        }
+        else {
+            throw new GiveMessageException(Arrays.asList(StatusCode.FAILED.toString()),
+                    Arrays.asList("Product Already DeActive"));
+        }
+        CommonResponseVO<LinkedHashMap> commonResponseVO =
+                new CommonResponseVO<>(Arrays.asList(StatusCode.PRODUCT_DEACTIVATED.toString()));
+        return commonResponseVO;
+    }
 }

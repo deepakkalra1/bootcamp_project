@@ -30,7 +30,9 @@ public enum StatusCode {
     PARENT,
     CHILD,
     NOT_AVAILABLE,
-    UNAUTHORIZED
+    UNAUTHORIZED,
+    PRODUCT_ACTIVATED,
+    PRODUCT_DEACTIVATED
 
 
 }
