@@ -28,7 +28,7 @@ public class Category extends Auditable {
     //created hasmap below which will be sent.. when i ll convert each content of list into hashmap and assign them to
     //clinkedHashmap below
     @JsonIgnore
-    @Transient
+    //@Transient
     @OneToMany
     @JoinColumn(name = "category_id")
     List<CategoryMetadataValue> categoryMetadataValues;

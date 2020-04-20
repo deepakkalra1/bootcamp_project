@@ -153,6 +153,7 @@ public class ProductService {
 
         }
         if(primaryImage!=null){
+            //a random no to be the name of image
             int randomImageNumber = (int) Math.random();
             byte[] primaryImageBytes = primaryImage.getBytes();
             String[] imageNameArr=primaryImage.getOriginalFilename().split(".");
@@ -165,43 +166,28 @@ public class ProductService {
             Files.write(path,primaryImageBytes);
             productVariation.setPrimary_image(System.getProperty("user.dir")+"/src/main/resources/images/profileImages/"+randomImageNumber+".jpg");
         }
-//        List<CategoryMetadataValue> categoryMetadataValuesFromProduct= productRepository.findById(productId).get().getCategory().getCategoryMetadataValues();
-//        int[] lengthOfCategoryMDVfromProduct =new int[] {categoryMetadataValuesFromProduct.size()};
-//        if (categoryMetadataValuesFromProduct.isEmpty()){
-//            lengthOfCategoryMDVfromProduct[0]=0;
-//        }
-//        else {
-//            lengthOfCategoryMDVfromProduct[0]=categoryMetadataValuesFromProduct.size();
-//        }
+
 
         List<CategoryMetadataValue> categoryMetadataValuesByCategoryId = categoryMetadataValueRepository.findByCategoryId(product.getCategory().getId());
         if (categoryMetadataValuesByCategoryId.isEmpty()){
             throw new GiveMessageException(Arrays.asList("No fields are present for this category"));
         }
-//        List<Integer> listOfFieldsIdForProduct=new ArrayList<>();
-//        List<String> listOfFieldsNameForProduct=new ArrayList<>();
-//
-//        categoryMetadataValuesByCategoryId.forEach(categoryMetadataValue -> {
-//
-//        });
         HashMap<String, String> finalMetadata = new HashMap<>();
             int sizeOfMDVfromCategory=categoryMetadataValuesByCategoryId.size();
             int[] checkIfFound= new int[]{-1};
-        System.out.println("test");
-        metadata.forEach((k,v)->{
+
+            //looping on sent metadata to be added to product variation
+        metadata.forEach((k, v)->{
                 if (Pattern.matches("addField_[0-9]$",k)){
-                        //to check if already registered
-//                    for (int i=0;i<lengthOfCategoryMDVfromProduct[0];i++){
-//                        if (v.equals(categoryMetadataValuesFromProduct.get(i).getCategoryMetadataField().getCategoryKey())){
-//                            throw new GiveMessageException(Arrays.asList("Provided field already exist"));
-//                        }
-//                    }
+                    //setting to 0 that means .. key has matched..
                     checkIfFound[0]=0;
+                    //looping through avaible metadataValues.. if provided one is available thr in that category
                     for (int i=0;i<sizeOfMDVfromCategory;i++){
-                        System.out.println(categoryMetadataValuesByCategoryId.get(i).getCategoryMetadataField().getCategoryKey());
+
                         if (v.equals(categoryMetadataValuesByCategoryId.get(i).getCategoryMetadataField().getCategoryKey())){
                          finalMetadata.put(v,categoryMetadataValuesByCategoryId.get(i).getCategoryValue());
-                        checkIfFound[0]=-1;
+                        //returning to -1.. if not ... this means value does not match.. as a metadataValues field...i.e wrong value sent
+                         checkIfFound[0]=-1;
                          continue;
                         }
                     }
@@ -209,11 +195,12 @@ public class ProductService {
                         throw new GiveMessageException(Arrays.asList("Provided Field Does not belong to this category product"));
                     }
 
-                }else {
+                }
+                else {
                     throw new GiveMessageException(Arrays.asList("To add a field to product variation metadata,JSON key name should begin with addField_[0-9]"));
                 }
         });
-        System.out.println("test");
+
         //putting all values
         productVariation.setMetadataHashmap(finalMetadata);
         productVariation.setPrice(priceOfProductVariation);
@@ -386,6 +373,7 @@ tried to set dynamic filtering on entity..
 
 
 
+
     //------------------------------------------------------------------------------------------------------>
     public CommonResponseVO viewAllProductVariationsBySeller(String token,Integer max,Integer offset,String order
             ,String sort, String query,int productId
@@ -533,7 +521,10 @@ tried to set dynamic filtering on entity..
         String username = JwtUtility.findUsernameFromToken(token);
         Seller seller = sellerRepository.findByEmail(username);
 
+        //fetched asked productVariation....so that it can be altered and saved back
         ProductVariation productVariation=productVariationRepository.findById(productVariationId).get();
+
+        //if seller is not the owner of this product variation
         if (seller.getId()!=productVariation.getProduct().getSeller_seller().getId()){
             throw new GiveMessageException(Arrays.asList(StatusCode.UNAUTHORIZED.toString())
                     ,Arrays.asList("Provided product variation id does not belongs to you ~"+username));
@@ -550,9 +541,80 @@ tried to set dynamic filtering on entity..
         if (primaryImage!=null){
             productVariation.setPrimary_image(primaryImage);
         }
+
+
         if (metadata.isEmpty()==false){
-            productVariation.setMetadataHashmap(metadata);
+
+            Product product = productVariation.getProduct();
+
+            List<String> categoryMetadataValuesFromProduct=new ArrayList<>();
+            int[] lengthOfCategoryMDVfromProduct ;
+
+            List<CategoryMetadataValue> categoryMetadataValuesByCategoryId = categoryMetadataValueRepository.findByCategoryId(product.getCategory().getId());
+            if (categoryMetadataValuesByCategoryId.isEmpty()){
+                throw new GiveMessageException(Arrays.asList("No fields are present for this category"));
+            }
+
+            //persistent entity hashmap cant be directly get and stored in variable.. so looped to get values
+            HashMap<String, String> finalMetadata = new HashMap<>();
+            productVariation.getMetadataHashmap().forEach((k,v)->{
+                finalMetadata.put(k,v);
+                categoryMetadataValuesFromProduct.add(k);
+            });
+            lengthOfCategoryMDVfromProduct =new int[] {finalMetadata.size()};
+
+
+            int sizeOfMDVfromCategory=categoryMetadataValuesByCategoryId.size();
+            int[] checkIfFound= new int[]{-1,-1};
+
+            List<String> finalCategoryMetadataValuesFromProduct = categoryMetadataValuesFromProduct;
+            int[] finalLengthOfCategoryMDVfromProduct = lengthOfCategoryMDVfromProduct;
+
+
+            metadata.forEach((k, v)-> {
+                        if (Pattern.matches("addField_[0-9]$", k)) {
+                            //to check if already thr in metadata hashmap of producct variation
+                            for (int i = 0; i < finalLengthOfCategoryMDVfromProduct[0]; i++) {
+                                if (v.equals(finalCategoryMetadataValuesFromProduct.get(i))) {
+                                    throw new GiveMessageException(Arrays.asList("Provided field already exist in metadata"));
+                                }
+                            }
+                            checkIfFound[0] = 0;
+                            for (int i = 0; i < sizeOfMDVfromCategory; i++) {
+
+                                if (v.equals(categoryMetadataValuesByCategoryId.get(i).getCategoryMetadataField().getCategoryKey())) {
+                                    finalMetadata.put(v, categoryMetadataValuesByCategoryId.get(i).getCategoryValue());
+                                    checkIfFound[0] = -1;
+                                    continue;
+                                }
+                            }
+                            if (checkIfFound[0] == 0) {
+                                throw new GiveMessageException(Arrays.asList("Provided Field Does not belong to this category product"));
+                            }
+
+                        } else if (Pattern.matches("removeField_[0-9]$", k)) {
+                            checkIfFound[1] = 0;
+
+
+                            for (int i = 0; i < finalLengthOfCategoryMDVfromProduct[0]; i++) {
+
+                                if (v.equals(finalCategoryMetadataValuesFromProduct.get(i))) {
+                                    finalMetadata.remove(v);
+                                    checkIfFound[1] = -1;
+                                }
+                            }
+
+                            if (checkIfFound[1] == 0) {
+                                throw new GiveMessageException(Arrays.asList("Provided field to be removed does not exist in product variation metadata"));
+                            }
+                        } else {
+                            throw new GiveMessageException(Arrays.asList("To add and remove a field to product variation metadata,JSON key name should begin with addField_[0-9] or removeField_[0-9]"));
+                        }
+                    });
+
+            productVariation.setMetadataHashmap(finalMetadata);
         }
+
         productVariationRepository.save(productVariation);
 
         CommonResponseVO commonResponseVO =
