@@ -1,0 +1,301 @@
+package com.tothenew.bootcamp.controller;
+
+import com.tothenew.bootcamp.enums.StatusCode;
+import com.tothenew.bootcamp.pojo.CommonResponseVO;
+import com.tothenew.bootcamp.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+
+@RestController
+public class Product {
+
+    @Autowired
+    ProductService productService;
+
+    //--------------------------------------------------------------------------------------------------------->
+    @PostMapping("/user/seller/product/add")
+    public ResponseEntity addProduct(@RequestHeader(value = "Authorization")String tokenString,
+                                     @RequestParam(name = "name")String productName,
+                                     @RequestParam(name = "categoryId")int cayegoryId,
+                                     @RequestParam(name = "brand")String brandName,
+                                     @RequestParam(name = "description")String description,
+                                     @RequestParam(name = "isCancelable",required = false) Boolean is_cancelable,
+                                     @RequestParam(name = "isReturnable",required = false) Boolean is_returnable
+                                     ){
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO=
+                productService.addProductBySeller(token,productName,cayegoryId,brandName,description, is_cancelable,is_returnable);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+
+    }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @PostMapping("/user/seller/product-variation/add")
+    public ResponseEntity addProductVariation(@RequestHeader(value = "Authorization") String tokenString,
+                                              @RequestParam(value = "productId")int productId,
+                                              @RequestParam(value = "primaryImage",required = false) MultipartFile primaryImage,
+                                              @RequestBody LinkedHashMap<String, String> metadata,
+                                              @RequestParam(value = "quantity",required = false)Integer quantity,
+                                              @RequestParam(value = "price",required = false)Integer price
+                                              ) throws IOException {
+        String token = tokenString.split(" ")[1];
+        productService.addProductVariationForProduct(token,productId,primaryImage,metadata,quantity,price);
+        CommonResponseVO commonResponseVO = new CommonResponseVO(Arrays.asList(StatusCode.SUCCESS.toString()));
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/product")
+    public ResponseEntity viewProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                              @RequestParam(value = "productId")int productId
+    ){
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewProductBySeller(token,productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/product/variation")
+    public ResponseEntity viewProductVariationBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                              @RequestParam(value = "productVariationId")int productVariationId
+    ){
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewProductVariationBySeller(token,productVariationId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/products")
+    public ResponseEntity viewAllProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                 @RequestParam(value = "max",required = false) Integer max,
+                                                 @RequestParam(value = "offset",required = false) Integer offset,
+                                                 @RequestParam(value = "order",required = false) String order,
+                                                 @RequestParam(value = "sort",required = false) String sort,
+                                                 @RequestParam(value = "query",required = false) String query)
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewAllProductsOfSeller(token,max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/seller/product/variations")
+    public ResponseEntity viewAllProductVariationsBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                 @RequestParam(value = "max",required = false) Integer max,
+                                                 @RequestParam(value = "offset",required = false) Integer offset,
+                                                 @RequestParam(value = "order",required = false) String order,
+                                                 @RequestParam(value = "sort",required = false) String sort,
+                                                 @RequestParam(value = "query",required = false) String query,
+                                                           @RequestParam(value = "productId")int productId)
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.viewAllProductVariationsBySeller(token,max,offset, order, sort, query,productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @DeleteMapping("/user/seller/product/delete")
+    public ResponseEntity deleteProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                           @RequestParam(value = "productId")int productId)
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService.deleteProductBySeller(token,productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //---------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/seller/product/update")
+    public ResponseEntity updateProductBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                @RequestParam(value = "productId")int productId,
+                                                @RequestParam(value = "name",required = false)String name,
+                                                @RequestParam(value = "description",required = false)String description,
+                                                @RequestParam(value = "is_cancelable",required = false)Boolean is_cancelable,
+                                                @RequestParam(value = "is_returnable",required = false)Boolean is_returnable
+    )
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService
+                .updateProductBySeller(token,productId,name,description,is_cancelable,is_returnable);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+    @PutMapping("/user/seller/product/variation/update")
+    public ResponseEntity updateProductVariationBySeller(@RequestHeader(value = "Authorization") String tokenString,
+                                                @RequestParam(value = "productVariationId")int productVariationId,
+                                                @RequestParam(value = "quantity",required = false)Integer quantity,
+                                                @RequestParam(value = "price",required = false)Integer price,
+                                                @RequestParam(value = "is_active",required = false)Boolean is_active,
+                                                @RequestParam(value = "primaryImage",required = false)String primaryImage,
+                                                         @RequestBody LinkedHashMap metadata
+    )
+    {
+        String token = tokenString.split(" ")[1];
+        CommonResponseVO commonResponseVO = productService
+                .updateProductVariationBySeller(token,productVariationId,quantity,price,is_active,primaryImage,metadata);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+
+    //-------------------------------->Customer Product Api
+    ///------------------------------------------------------------------------------------------------------>
+    @GetMapping("/user/customer/product")
+    public ResponseEntity getProductByCustomer(@RequestParam(value = "productId")int productId)
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductByCustomer(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/customer/products")
+    public ResponseEntity getProductsByCustomer(
+            @RequestParam(value = "max",required = false) Integer max,
+            @RequestParam(value = "offset",required = false) Integer offset,
+            @RequestParam(value = "order",required = false) String order,
+            @RequestParam(value = "sort",required = false) String sort,
+            @RequestParam(value = "query",required = false) String query
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductsByCustomer(max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/customer/similar/products")
+    public ResponseEntity getSimilarProductsByCustomer(
+            @RequestParam(value = "productId") int productId,
+            @RequestParam(value = "max",required = false) Integer max,
+            @RequestParam(value = "offset",required = false) Integer offset,
+            @RequestParam(value = "order",required = false) String order,
+            @RequestParam(value = "sort",required = false) String sort,
+            @RequestParam(value = "query",required = false) String query
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getSimilarProductsByCustomer(productId,max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+    //-------------------------------->Admin Product Api
+    ///------------------------------------------------------------------------------------------------------>
+    @GetMapping("/user/admin/product")
+    public ResponseEntity getProductByAdmin(@RequestParam(value = "productId")int productId)
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductByCustomer(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @GetMapping("/user/admin/products")
+    public ResponseEntity getProductsByAdmin(
+            @RequestParam(value = "max",required = false) Integer max,
+            @RequestParam(value = "offset",required = false) Integer offset,
+            @RequestParam(value = "order",required = false) String order,
+            @RequestParam(value = "sort",required = false) String sort,
+            @RequestParam(value = "query",required = false) String query
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .getProductsByCustomer(max,offset, order, sort, query);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/admin/product/activate")
+    public ResponseEntity activateProductByAdmin(
+            @RequestParam(value = "productId") int productId
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .activateProductByAdmin(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+
+
+
+
+
+    //-------------------------------------------------------------------------------------------------------->
+    @PutMapping("/user/admin/product/deactivate")
+    public ResponseEntity deactivateProductByAdmin(
+            @RequestParam(value = "productId") int productId
+    )
+    {
+        CommonResponseVO commonResponseVO = productService
+                .deactivateProductByAdmin(productId);
+        return new ResponseEntity(commonResponseVO,HttpStatus.OK);
+    }
+}
